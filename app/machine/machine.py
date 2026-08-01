@@ -1,6 +1,3 @@
-%%writefile PyCNC_Studio/app/machine/machine.py
-
-
 class Machine:
 
 
@@ -13,6 +10,12 @@ class Machine:
     def connect(self):
 
         return self.driver.connect()
+
+
+
+    def disconnect(self):
+
+        return self.driver.disconnect()
 
 
 
