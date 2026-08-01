@@ -26,20 +26,24 @@ class JobManager:
 
         results = []
 
+
         for command in self.commands:
 
             axis = command["axis"]
             distance = command["distance"]
+
 
             result = self.machine.jog(
                 axis,
                 distance
             )
 
+
             results.append(result)
 
 
         self.running = False
+
 
         return results
 
