@@ -1,4 +1,3 @@
-%%writefile PyCNC_Studio/app/drivers/simulator_driver.py
 
 from app.drivers.cnc_driver import CNCDriver
 
