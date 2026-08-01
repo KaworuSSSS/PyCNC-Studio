@@ -1,0 +1,46 @@
+"""
+PyCNC Studio
+G-Code Parser
+
+Interpreta comandos CNC básicos.
+"""
+
+
+class GCodeParser:
+
+
+    def parse_line(self, line):
+
+        line = line.strip()
+
+
+        if line == "":
+            return None
+
+
+        if line.startswith(";"):
+            return None
+
+
+        parts = line.split()
+
+
+        command = parts[0]
+
+
+        parameters = {}
+
+
+        for item in parts[1:]:
+
+            axis = item[0]
+
+            value = float(item[1:])
+
+            parameters[axis] = value
+
+
+        return {
+            "command": command,
+            "parameters": parameters
+        }
