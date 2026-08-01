@@ -1,35 +1,18 @@
-"""
-PyCNC Studio
-Machine Controller
-
-Control principal de la máquina CNC.
-"""
-
-
-from app.simulator.cnc_simulator import CNCSimulator
-
+%%writefile PyCNC_Studio/app/machine/machine.py
 
 
 class Machine:
 
 
-    def __init__(self):
+    def __init__(self, driver):
 
-        # Driver por defecto
-        # Más adelante será intercambiable
-        self.driver = CNCSimulator()
+        self.driver = driver
 
 
 
     def connect(self):
 
         return self.driver.connect()
-
-
-
-    def disconnect(self):
-
-        return self.driver.disconnect()
 
 
 
@@ -41,7 +24,10 @@ class Machine:
 
     def jog(self, axis, distance):
 
-        return self.driver.move(axis, distance)
+        return self.driver.move_relative(
+            axis,
+            distance
+        )
 
 
 
