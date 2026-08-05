@@ -12,8 +12,6 @@ class MotionPlanner:
     def __init__(self):
 
         # Posición actual de la máquina
-        # Se utilizará en futuras versiones
-        # para soportar G90, G91 y trayectorias.
         self.position = {
             "X": 0.0,
             "Y": 0.0,
@@ -24,23 +22,26 @@ class MotionPlanner:
 
         movements = []
 
-
         for command in commands:
 
-            if "parameters" in command:
+            if "parameters" not in command:
+                continue
 
+            for axis, value in command["parameters"].items():
 
-                for axis, distance in command["parameters"].items():
+                # Solo procesamos ejes CNC
+                if axis not in ["X", "Y", "Z"]:
+                    continue
 
+                # Actualizar posición interna
+                self.position[axis] = value
 
-                    if axis in ["X", "Y", "Z"]:
-
-                        movements.append(
-                            {
-                                "axis": axis,
-                                "distance": distance
-                            }
-                        )
-
+                # Generar movimiento
+                movements.append(
+                    {
+                        "axis": axis,
+                        "distance": value
+                    }
+                )
 
         return movements
