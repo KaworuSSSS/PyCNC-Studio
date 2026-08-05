@@ -3,7 +3,7 @@ Tests for CNC Simulator
 """
 
 
-from app.simulator.cnc_simulator import CNCSimulator
+from app.drivers.simulator_driver import CNCSimulator
 
 
 
@@ -23,7 +23,7 @@ def test_move():
 
     cnc.connect()
 
-    cnc.move("X", 50)
+    cnc.move_relative("X", 50)
 
     status = cnc.get_status()
 
