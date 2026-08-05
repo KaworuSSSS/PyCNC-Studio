@@ -264,4 +264,37 @@ Proyecto detenido en:
 
 Listo para comenzar:
 
-**v0.5 — G-code Parser**
+
+## v0.5 - Basic G-code Parser
+
+Status: Completed
+
+Implemented:
+
+- G-code file reader
+- Basic G-code parser
+- Support for G0 and G1 commands
+- Conversion from G-code to machine commands
+- Execution through JobManager
+- Simulator execution from .nc files
+- Integration tests
+
+Validated program:
+
+```gcode
+; PyCNC Studio test program
+
+G0 X50
+G0 Y25
+G1 Z-5
+
+
+Simulation result:
+
+X = 50
+Y = 25
+Z = -5
+
+Tests:
+
+8 passed
