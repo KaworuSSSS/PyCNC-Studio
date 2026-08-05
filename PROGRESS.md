@@ -298,3 +298,290 @@ Z = -5
 Tests:
 
 8 passed
+
+PyCNC Studio — Estado del proyecto
+
+Repositorio:
+GitHub: https://github.com/KaworuSSSS/PyCNC-Studio
+
+Forma de trabajo:
+- Desarrollo desde GitHub usando navegador.
+- Pruebas ejecutadas en Google Colab clonando el repositorio.
+- Cada cambio se prueba con pytest antes de continuar.
+
+Estado actual:
+v0.6.x — Motion Planner integrado con JobManager
+
+Última prueba realizada:
+
+============================== 11 passed ==============================
+
+Arquitectura actual:
+
+Archivo .nc
+    |
+    v
+GCodeFileReader
+    |
+    v
+GCodeParser
+    |
+    v
+MotionPlanner
+    |
+    v
+JobManager
+    |
+    v
+Machine
+    |
+    v
+CNCSimulator
+
+
+Estructura actual:
+
+app/
+|
+├── drivers/
+│   ├── cnc_driver.py
+│   └── simulator_driver.py
+│
+├── machine/
+│   └── machine.py
+│
+├── job/
+│   ├── __init__.py
+│   └── job_manager.py
+│
+├── gcode/
+│   ├── parser.py
+│   └── file_reader.py
+│
+├── planner/
+│   ├── motion_planner.py
+│   └── __init__.py
+│
+├── comm/
+│   └── communication.py
+│
+├── core/
+│
+├── simulator/
+│
+└── gui/
+
+
+Funcionamiento actual:
+
+1) GCodeParser
+
+Convierte:
+
+G0 X50
+
+en:
+
+{
+ "command":"G0",
+ "parameters":{
+    "X":50
+ }
+}
+
+
+2) MotionPlanner
+
+Mantiene posición interna:
+
+{
+ "X":0,
+ "Y":0,
+ "Z":0
+}
+
+Convierte comandos en posiciones objetivo:
+
+{
+ "command":"G0",
+ "target":{
+    "X":50,
+    "Y":0,
+    "Z":0
+ }
+}
+
+
+Ejemplo:
+
+Entrada:
+
+G0 X50
+G0 Y25
+G1 Z-5
+
+Salida:
+
+[
+{
+ "command":"G0",
+ "target":{
+    "X":50,
+    "Y":0,
+    "Z":0
+ }
+},
+{
+ "command":"G0",
+ "target":{
+    "X":50,
+    "Y":25,
+    "Z":0
+ }
+},
+{
+ "command":"G1",
+ "target":{
+    "X":50,
+    "Y":25,
+    "Z":-5
+ }
+}
+]
+
+
+3) JobManager
+
+Ahora recibe movimientos del MotionPlanner.
+
+Convierte posiciones objetivo en movimientos relativos:
+
+Ejemplo:
+
+Posición actual:
+
+X0 Y0 Z0
+
+Target:
+
+X50 Y25 Z0
+
+Ejecuta:
+
+machine.jog("X",50)
+machine.jog("Y",25)
+
+
+4) Machine
+
+Capa intermedia:
+
+JobManager
+     |
+     v
+Machine
+     |
+     v
+Driver
+
+
+5) CNCSimulator
+
+Actualmente funciona:
+
+- connect()
+- disconnect()
+- home()
+- move_relative()
+- get_status()
+
+Ejemplo:
+
+HOME
+
+X +50
+
+Y +25
+
+Z -5
+
+
+Tests actuales:
+
+tests/
+├── test_communication.py
+├── test_gcode.py
+├── test_gcode_job.py
+├── test_machine.py
+├── test_motion_planner.py
+└── test_simulator.py
+
+
+Todos pasan:
+
+11 tests OK
+
+
+Último cambio importante:
+
+feat: integrate motion planner with job manager
+
+
+Próximo objetivo pendiente:
+
+v0.6.4 — Implementar modos CNC G90/G91
+
+Objetivo:
+
+G90 = coordenadas absolutas
+
+Ejemplo:
+
+G90
+G0 X50
+G0 X60
+
+Resultado:
+
+X50
+X60
+
+
+G91 = coordenadas relativas
+
+Ejemplo:
+
+G91
+G0 X50
+G0 X60
+
+Resultado:
+
+X50
+X110
+
+
+Plan para continuar:
+
+1. Crear tests nuevos en:
+tests/test_motion_planner.py
+
+2. Hacer fallar los tests.
+
+3. Modificar:
+app/planner/motion_planner.py
+
+4. Ejecutar:
+
+pytest
+
+5. Mantener todos los tests verdes.
+
+
+Último punto exacto donde continuar:
+
+Abrir:
+
+tests/test_motion_planner.py
+
+y comenzar implementación de G90/G91.
