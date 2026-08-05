@@ -1,13 +1,20 @@
+"""
+PyCNC Studio
+Job Manager
+
+Executes planned CNC movements.
+"""
+
+
 class JobManager:
 
 
-    def __init__(self, machine, planner=None):
-    
+    def __init__(self, machine):
+
         self.machine = machine
-        self.planner = planner
-    
         self.commands = []
         self.running = False
+
 
 
     def load(self, commands):
@@ -25,52 +32,55 @@ class JobManager:
             return "No job loaded"
 
 
+
         self.running = True
 
         results = []
-        # Si existe un Motion Planner,
-        # convertir los comandos en movimientos.
-        
-        if self.planner:
-        
-            movements = self.planner.plan(
-                self.commands
-            )
-        
-        else:
-        
-            movements = self.commands
 
 
-        
-        for command in movements:
+
+        current_position = {
+
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+
+        }
 
 
-            # Formato nuevo proveniente del G-Code Parser
-            #
-            # Ejemplo:
-            # {
-            #   "command": "G1",
-            #   "parameters": {
-            #       "X":50,
-            #       "Y":25
-            #   }
-            # }
 
-            if "parameters" in command:
+        for command in self.commands:
 
 
-                for axis, distance in command["parameters"].items():
+
+            # Nuevo formato MotionPlanner
+
+            if "target" in command:
 
 
-                    # Solo ejecutar movimientos CNC
+                target = command["target"]
 
-                    if axis in ["X", "Y", "Z"]:
+
+
+                for axis in ["X", "Y", "Z"]:
+
+
+                    if target[axis] != current_position[axis]:
+
+
+                        distance = (
+                            target[axis]
+                            -
+                            current_position[axis]
+                        )
 
 
                         result = self.machine.jog(
+
                             axis,
+
                             distance
+
                         )
 
 
@@ -78,15 +88,13 @@ class JobManager:
 
 
 
-            # Formato antiguo v0.4
-            #
-            # Ejemplo:
-            # {
-            #   "axis":"X",
-            #   "distance":50
-            # }
+                        current_position[axis] = target[axis]
 
-            else:
+
+
+            # Compatibilidad v0.4
+
+            elif "axis" in command:
 
 
                 axis = command["axis"]
@@ -95,12 +103,39 @@ class JobManager:
 
 
                 result = self.machine.jog(
+
                     axis,
+
                     distance
+
                 )
 
 
                 results.append(result)
+
+
+
+            # Compatibilidad directa G-code parser
+
+            elif "parameters" in command:
+
+
+                for axis, value in command["parameters"].items():
+
+
+                    if axis in ["X", "Y", "Z"]:
+
+
+                        result = self.machine.jog(
+
+                            axis,
+
+                            value
+
+                        )
+
+
+                        results.append(result)
 
 
 
