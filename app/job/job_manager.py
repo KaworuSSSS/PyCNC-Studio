@@ -28,9 +28,22 @@ class JobManager:
         self.running = True
 
         results = []
+        # Si existe un Motion Planner,
+        # convertir los comandos en movimientos.
+        
+        if self.planner:
+        
+            movements = self.planner.plan(
+                self.commands
+            )
+        
+        else:
+        
+            movements = self.commands
 
 
-        for command in self.commands:
+        
+        for command in movements:
 
 
             # Formato nuevo proveniente del G-Code Parser
