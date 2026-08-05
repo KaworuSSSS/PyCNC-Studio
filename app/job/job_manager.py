@@ -29,17 +29,63 @@ class JobManager:
 
         for command in self.commands:
 
-            axis = command["axis"]
-            distance = command["distance"]
+
+            # Formato nuevo proveniente del G-Code Parser
+            #
+            # Ejemplo:
+            # {
+            #   "command": "G1",
+            #   "parameters": {
+            #       "X":50,
+            #       "Y":25
+            #   }
+            # }
+
+            if "parameters" in command:
 
 
-            result = self.machine.jog(
-                axis,
-                distance
-            )
+                for axis, distance in command["parameters"].items():
 
 
-            results.append(result)
+                    # Solo ejecutar movimientos CNC
+
+                    if axis in ["X", "Y", "Z"]:
+
+
+                        result = self.machine.jog(
+                            axis,
+                            distance
+                        )
+
+
+                        results.append(result)
+
+
+
+            # Formato antiguo v0.4
+            #
+            # Ejemplo:
+            # {
+            #   "axis":"X",
+            #   "distance":50
+            # }
+
+            else:
+
+
+                axis = command["axis"]
+
+                distance = command["distance"]
+
+
+                result = self.machine.jog(
+                    axis,
+                    distance
+                )
+
+
+                results.append(result)
+
 
 
         self.running = False
