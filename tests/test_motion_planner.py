@@ -5,9 +5,11 @@ Tests for Motion Planner
 from app.planner.motion_planner import MotionPlanner
 
 
+
 def test_basic_motion_plan():
 
     planner = MotionPlanner()
+
 
     commands = [
 
@@ -34,31 +36,47 @@ def test_basic_motion_plan():
 
     ]
 
+
     result = planner.plan(commands)
+
 
     assert result == [
 
         {
-            "axis": "X",
-            "distance": 50
+            "command": "G0",
+            "target": {
+                "X": 50,
+                "Y": 0.0,
+                "Z": 0.0
+            }
         },
 
         {
-            "axis": "Y",
-            "distance": 25
+            "command": "G0",
+            "target": {
+                "X": 50,
+                "Y": 25,
+                "Z": 0.0
+            }
         },
 
         {
-            "axis": "Z",
-            "distance": -5
+            "command": "G1",
+            "target": {
+                "X": 50,
+                "Y": 25,
+                "Z": -5
+            }
         }
 
     ]
 
 
+
 def test_planner_tracks_position():
 
     planner = MotionPlanner()
+
 
     commands = [
 
@@ -85,11 +103,16 @@ def test_planner_tracks_position():
 
     ]
 
+
     planner.plan(commands)
+
 
     assert planner.position["X"] == 60
     assert planner.position["Y"] == 25
     assert planner.position["Z"] == 0
+
+
+
 def test_planner_generates_target_positions():
 
     planner = MotionPlanner()
@@ -119,13 +142,13 @@ def test_planner_generates_target_positions():
 
     assert result[0]["target"] == {
         "X": 50,
-        "Y": 0,
-        "Z": 0
+        "Y": 0.0,
+        "Z": 0.0
     }
 
 
     assert result[1]["target"] == {
         "X": 50,
         "Y": 25,
-        "Z": 0
+        "Z": 0.0
     }
