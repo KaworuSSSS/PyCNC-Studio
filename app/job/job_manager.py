@@ -1,8 +1,11 @@
 class JobManager:
 
-    def __init__(self, machine):
 
+    def __init__(self, machine, planner=None):
+    
         self.machine = machine
+        self.planner = planner
+    
         self.commands = []
         self.running = False
 
