@@ -2,16 +2,12 @@
 Tests for Motion Planner
 """
 
-
 from app.planner.motion_planner import MotionPlanner
-
 
 
 def test_basic_motion_plan():
 
-
     planner = MotionPlanner()
-
 
     commands = [
 
@@ -38,9 +34,7 @@ def test_basic_motion_plan():
 
     ]
 
-
     result = planner.plan(commands)
-
 
     assert result == [
 
@@ -60,3 +54,39 @@ def test_basic_motion_plan():
         }
 
     ]
+
+
+def test_planner_tracks_position():
+
+    planner = MotionPlanner()
+
+    commands = [
+
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 50
+            }
+        },
+
+        {
+            "command": "G0",
+            "parameters": {
+                "Y": 25
+            }
+        },
+
+        {
+            "command": "G1",
+            "parameters": {
+                "X": 60
+            }
+        }
+
+    ]
+
+    planner.plan(commands)
+
+    assert planner.position["X"] == 60
+    assert planner.position["Y"] == 25
+    assert planner.position["Z"] == 0
