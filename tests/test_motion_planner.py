@@ -90,3 +90,42 @@ def test_planner_tracks_position():
     assert planner.position["X"] == 60
     assert planner.position["Y"] == 25
     assert planner.position["Z"] == 0
+def test_planner_generates_target_positions():
+
+    planner = MotionPlanner()
+
+
+    commands = [
+
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 50
+            }
+        },
+
+        {
+            "command": "G0",
+            "parameters": {
+                "Y": 25
+            }
+        }
+
+    ]
+
+
+    result = planner.plan(commands)
+
+
+    assert result[0]["target"] == {
+        "X": 50,
+        "Y": 0,
+        "Z": 0
+    }
+
+
+    assert result[1]["target"] == {
+        "X": 50,
+        "Y": 25,
+        "Z": 0
+    }
