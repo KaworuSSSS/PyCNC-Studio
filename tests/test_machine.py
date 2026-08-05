@@ -4,12 +4,15 @@ Tests for Machine Controller
 
 
 from app.machine.machine import Machine
+from app.drivers.simulator_driver import CNCSimulator
 
 
 
 def test_machine_connection():
 
-    machine = Machine()
+    machine = Machine(
+        CNCSimulator()
+    )
 
     result = machine.connect()
 
@@ -19,7 +22,9 @@ def test_machine_connection():
 
 def test_machine_jog():
 
-    machine = Machine()
+    machine = Machine(
+        CNCSimulator()
+    )
 
     machine.connect()
 
