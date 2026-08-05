@@ -9,6 +9,16 @@ into machine movements.
 
 class MotionPlanner:
 
+    def __init__(self):
+
+        # Posición actual de la máquina
+        # Se utilizará en futuras versiones
+        # para soportar G90, G91 y trayectorias.
+        self.position = {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        }
 
     def plan(self, commands):
 
