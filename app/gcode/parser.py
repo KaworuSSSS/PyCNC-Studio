@@ -9,6 +9,25 @@ Interpreta comandos CNC básicos.
 class GCodeParser:
 
 
+    def parse(self, lines):
+
+        commands = []
+
+
+        for line in lines:
+
+            result = self.parse_line(line)
+
+
+            if result is not None:
+
+                commands.append(result)
+
+
+        return commands
+
+
+
     def parse_line(self, line):
 
         line = line.strip()
