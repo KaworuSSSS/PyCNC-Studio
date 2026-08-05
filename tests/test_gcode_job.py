@@ -1,33 +1,25 @@
+"""
+Tests for G-code Job execution
+"""
+
+
 from app.gcode.file_reader import GCodeFileReader
 from app.gcode.parser import GCodeParser
-
-from app.drivers.simulator_driver import CNCSimulator
-from app.machine.machine import Machine
+from app.planner.motion_planner import MotionPlanner
 from app.job.job_manager import JobManager
+from app.machine.machine import Machine
+from app.drivers.simulator_driver import CNCSimulator
 
 
 
-def test_execute_gcode_file():
+def test_gcode_job_execution():
 
 
-    reader = GCodeFileReader()
+    # Crear máquina simulada
 
+    driver = CNCSimulator()
 
-    lines = reader.load(
-        "examples/test.nc"
-    )
-
-
-    parser = GCodeParser()
-
-
-    commands = parser.parse(lines)
-
-
-
-    machine = Machine(
-        CNCSimulator()
-    )
+    machine = Machine(driver)
 
 
     machine.connect()
@@ -36,12 +28,45 @@ def test_execute_gcode_file():
 
 
 
+    # Leer archivo G-code
+
+    reader = GCodeFileReader()
+
+    lines = reader.load(
+        "examples/test.nc"
+    )
+
+
+
+    # Parsear G-code
+
+    parser = GCodeParser()
+
+    commands = parser.parse(lines)
+
+
+
+    # Planificar movimientos
+
+    planner = MotionPlanner()
+
+    movements = planner.plan(commands)
+
+
+
+    # Ejecutar Job
+
     job = JobManager(machine)
 
 
-    job.load(commands)
+    result = job.load(movements)
 
-    job.start()
+
+    assert result == "Job loaded: 3 commands"
+
+
+
+    output = job.start()
 
 
 
