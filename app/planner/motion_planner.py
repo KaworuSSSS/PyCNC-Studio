@@ -68,3 +68,38 @@ class MotionPlanner:
 
 
         return movements
+
+
+from app.planner.motion_planner import MotionPlanner
+
+
+def test_g90_absolute_mode():
+
+    planner = MotionPlanner()
+
+    commands = [
+        {"command": "G90"},
+        {"command": "G0", "parameters": {"X": 50}},
+        {"command": "G0", "parameters": {"X": 60}},
+    ]
+
+    result = planner.plan(commands)
+
+    assert result[0]["target"]["X"] == 50
+    assert result[1]["target"]["X"] == 60
+
+
+def test_g91_relative_mode():
+
+    planner = MotionPlanner()
+
+    commands = [
+        {"command": "G91"},
+        {"command": "G0", "parameters": {"X": 50}},
+        {"command": "G0", "parameters": {"X": 60}},
+    ]
+
+    result = planner.plan(commands)
+
+    assert result[0]["target"]["X"] == 50
+    assert result[1]["target"]["X"] == 110
