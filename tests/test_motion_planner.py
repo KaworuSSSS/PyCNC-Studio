@@ -131,7 +131,9 @@ def test_g90_absolute_mode():
     planner = MotionPlanner()
 
     commands = [
-        {"command": "G90"},
+        {
+            "command": "G90"
+        },
         {
             "command": "G0",
             "parameters": {
@@ -157,7 +159,9 @@ def test_g91_relative_mode():
     planner = MotionPlanner()
 
     commands = [
-        {"command": "G91"},
+        {
+            "command": "G91"
+        },
         {
             "command": "G0",
             "parameters": {
@@ -237,3 +241,51 @@ def test_g20_inch_mode():
     result = planner.plan(commands)
 
     assert result[0]["target"]["X"] == 25.4
+
+
+def test_g92_set_position():
+
+    planner = MotionPlanner()
+
+    commands = [
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 50
+            }
+        },
+        {
+            "command": "G92",
+            "parameters": {
+                "X": 0
+            }
+        }
+    ]
+
+    planner.plan(commands)
+
+    assert planner.position["X"] == 0
+
+
+def test_g92_after_offset_move():
+
+    planner = MotionPlanner()
+
+    commands = [
+        {
+            "command": "G92",
+            "parameters": {
+                "X": 100
+            }
+        },
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 110
+            }
+        }
+    ]
+
+    result = planner.plan(commands)
+
+    assert result[0]["target"]["X"] == 110
