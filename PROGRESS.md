@@ -585,3 +585,360 @@ Abrir:
 tests/test_motion_planner.py
 
 y comenzar implementación de G90/G91.
+Perfecto. Guarda este resumen y mañana pégamelo para continuar exactamente desde aquí.
+
+# PyCNC Studio — Estado del proyecto
+
+## Repositorio
+
+GitHub:
+https://github.com/KaworuSSSS/PyCNC-Studio
+
+Forma de trabajo:
+
+- Desarrollo directamente desde GitHub usando navegador.
+- Pruebas ejecutadas en Google Colab clonando el repositorio.
+- Cambios probados siempre con pytest antes de continuar.
+- Los commits se realizan desde el navegador.
+
+---
+
+# Estado actual
+
+Versión aproximada:
+
+v0.10.0 — M-Code Support integrado
+
+Última validación:
+
+============================== 25 passed ==============================
+
+Todos los tests están verdes.
+
+---
+
+# Arquitectura actual
+
+
+Archivo .nc
+
+|
+v
+
+GCodeFileReader
+
+|
+v
+
+GCodeParser
+
+|
+v
+
+MotionPlanner
+
+|
+v
+
+JobManager
+
+|
+v
+
+Machine
+
+|
+v
+
+CNCSimulator
+
+
+---
+
+# Estructura actual
+
+
+app/
+
+├── drivers/
+│ ├── cnc_driver.py
+│ └── simulator_driver.py
+│
+├── machine/
+│ └── machine.py
+│
+├── job/
+│ ├── init.py
+│ └── job_manager.py
+│
+├── gcode/
+│ ├── parser.py
+│ └── file_reader.py
+│
+├── planner/
+│ ├── motion_planner.py
+│ └── init.py
+│
+├── comm/
+│ └── communication.py
+│
+├── core/
+│
+├── simulator/
+│
+└── gui/
+
+tests/
+
+├── test_communication.py
+├── test_gcode.py
+├── test_gcode_job.py
+├── test_m_codes.py
+├── test_machine.py
+├── test_motion_planner.py
+└── test_simulator.py
+
+
+---
+
+# Funciones implementadas
+
+## GCode Parser
+
+Soporta:
+
+- Movimiento G0
+- Movimiento G1
+- Comentarios con ;
+- Líneas vacías
+- Parámetros normales
+- Feed rate F
+
+Ejemplo:
+
+Entrada:
+
+
+G1 X50 Y20 F800
+
+
+Salida:
+
+```python
+{
+ "command":"G1",
+ "parameters":{
+    "X":50,
+    "Y":20,
+    "F":800
+ }
+}
+Motion Planner
+
+Actualmente soporta:
+
+Coordenadas absolutas
+
+G90
+
+Ejemplo:
+
+G90
+G0 X50
+G0 X60
+
+Resultado:
+
+X50
+X60
+Coordenadas relativas
+
+G91
+
+Ejemplo:
+
+G91
+G0 X50
+G0 X60
+
+Resultado:
+
+X50
+X110
+Unidades
+
+G21:
+
+Milímetros
+
+G20:
+
+Pulgadas
+
+Conversión:
+
+1 inch = 25.4 mm
+G92
+
+Cambio de origen:
+
+Ejemplo:
+
+G0 X50
+G92 X0
+
+Ahora:
+
+posición X = 0
+Feed rate
+
+Ejemplo:
+
+G1 X100 F800
+
+Genera:
+
+{
+ "command":"G1",
+ "feed_rate":800
+}
+M-Codes implementados
+
+Archivo:
+
+tests/test_m_codes.py
+
+Soporta:
+
+M0
+
+Pausa
+
+Salida:
+
+{
+ "command":"M0",
+ "action":"pause"
+}
+M2
+
+Fin de programa
+
+Salida:
+
+{
+ "command":"M2",
+ "action":"program_end"
+}
+M3
+
+Spindle ON
+
+Ejemplo:
+
+M3 S1000
+
+Salida:
+
+{
+ "command":"M3",
+ "spindle_speed":1000
+}
+M5
+
+Spindle OFF
+
+Salida:
+
+{
+ "command":"M5",
+ "action":"spindle_stop"
+}
+Último cambio realizado
+
+Se modificó:
+
+app/planner/motion_planner.py
+
+para añadir:
+
+soporte G20/G21
+soporte G92
+soporte M0/M2/M3/M5
+seguimiento de feed rate
+estado del spindle
+
+Última prueba:
+
+25 passed
+Próximo objetivo
+v0.11 — CNC Job Control
+
+Siguiente módulo a mejorar:
+
+app/job/job_manager.py
+
+Objetivo:
+
+Crear control real de trabajos CNC.
+
+Añadir:
+
+Estado del trabajo
+
+Ejemplo:
+
+{
+ "status":"running",
+ "current_line":25,
+ "total_lines":100
+}
+Pausa
+
+Cuando aparezca:
+
+M0
+
+el trabajo debe detenerse.
+
+Continuar
+
+Añadir:
+
+job.resume()
+Cancelar
+
+Añadir:
+
+job.stop()
+Progreso
+
+Ejemplo:
+
+Running job
+
+[██████----] 60%
+
+Line 60 / 100
+Método de trabajo para continuar
+
+Seguir siempre este flujo:
+
+Crear tests nuevos.
+Ejecutar pytest y hacer fallar los tests.
+Modificar código.
+Ejecutar pytest.
+Mantener todos los tests verdes.
+Hacer commit desde GitHub.
+
+Punto exacto donde continuar mañana:
+
+Crear:
+
+tests/test_job_control.py
+
+Empezar implementación de:
+
+v0.11 CNC Job Control
+
+Mañana con este texto podemos continuar directamente desde **JobManager avanzado** sin repetir todo el desarrollo. Buen avance hoy: el proyecto ya tiene una base de intérprete CNC bastante ordenada.
