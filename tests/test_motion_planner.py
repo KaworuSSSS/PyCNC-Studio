@@ -195,3 +195,45 @@ def test_feed_rate_tracking():
     result = planner.plan(commands)
 
     assert result[0]["feed_rate"] == 500
+
+
+def test_g21_millimeter_mode():
+
+    planner = MotionPlanner()
+
+    commands = [
+        {
+            "command": "G21"
+        },
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 50
+            }
+        }
+    ]
+
+    result = planner.plan(commands)
+
+    assert result[0]["target"]["X"] == 50
+
+
+def test_g20_inch_mode():
+
+    planner = MotionPlanner()
+
+    commands = [
+        {
+            "command": "G20"
+        },
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 1
+            }
+        }
+    ]
+
+    result = planner.plan(commands)
+
+    assert result[0]["target"]["X"] == 25.4
