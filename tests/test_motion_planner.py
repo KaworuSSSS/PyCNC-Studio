@@ -5,11 +5,9 @@ Tests for Motion Planner
 from app.planner.motion_planner import MotionPlanner
 
 
-
 def test_basic_motion_plan():
 
     planner = MotionPlanner()
-
 
     commands = [
 
@@ -36,9 +34,7 @@ def test_basic_motion_plan():
 
     ]
 
-
     result = planner.plan(commands)
-
 
     assert result == [
 
@@ -72,11 +68,9 @@ def test_basic_motion_plan():
     ]
 
 
-
 def test_planner_tracks_position():
 
     planner = MotionPlanner()
-
 
     commands = [
 
@@ -103,20 +97,16 @@ def test_planner_tracks_position():
 
     ]
 
-
     planner.plan(commands)
-
 
     assert planner.position["X"] == 60
     assert planner.position["Y"] == 25
-    assert planner.position["Z"] == 0
-
+    assert planner.position["Z"] == 0.0
 
 
 def test_planner_generates_target_positions():
 
     planner = MotionPlanner()
-
 
     commands = [
 
@@ -136,9 +126,7 @@ def test_planner_generates_target_positions():
 
     ]
 
-
     result = planner.plan(commands)
-
 
     assert result[0]["target"] == {
         "X": 50,
@@ -146,13 +134,14 @@ def test_planner_generates_target_positions():
         "Z": 0.0
     }
 
-
     assert result[1]["target"] == {
         "X": 50,
         "Y": 25,
         "Z": 0.0
     }
-    def test_g90_absolute_mode():
+
+
+def test_g90_absolute_mode():
 
     planner = MotionPlanner()
 
@@ -182,7 +171,6 @@ def test_planner_generates_target_positions():
 
     assert result[0]["target"]["X"] == 50
     assert result[1]["target"]["X"] == 60
-
 
 
 def test_g91_relative_mode():
