@@ -48,6 +48,7 @@ class MotionPlanner:
                 continue
 
 
+
             if "parameters" not in command:
 
                 continue
@@ -59,7 +60,7 @@ class MotionPlanner:
             for axis, value in command["parameters"].items():
 
 
-                # Feed rate
+                # Feed Rate
 
                 if axis == "F":
 
@@ -68,7 +69,7 @@ class MotionPlanner:
 
 
 
-                # Ejes CNC
+                # Solo ejes CNC
 
                 if axis not in ["X", "Y", "Z"]:
 
@@ -83,11 +84,13 @@ class MotionPlanner:
 
                 else:
 
-                    # G91 relativo
+                    # G91 movimiento relativo
 
                     self.position[axis] += value
 
 
+
+            # Crear movimiento
 
             movement = {
 
@@ -101,11 +104,17 @@ class MotionPlanner:
 
                     "Z": self.position["Z"]
 
-                },
-
-                "feed_rate": self.feed_rate
+                }
 
             }
+
+
+            # Añadir feed rate solamente si existe
+
+            if self.feed_rate is not None:
+
+                movement["feed_rate"] = self.feed_rate
+
 
 
             movements.append(movement)
