@@ -3,7 +3,7 @@ PyCNC Studio
 Motion Planner
 
 Converts parsed G-code commands
-into machine target positions.
+into machine target positions and CNC actions.
 """
 
 
@@ -23,8 +23,7 @@ class MotionPlanner:
         # Feed rate actual
         self.feed_rate = None
 
-        # Unidades por defecto
-        # G21 = milímetros
+        # G21 por defecto
         self.units = "mm"
 
 
@@ -41,7 +40,70 @@ class MotionPlanner:
 
 
             # -------------------------
-            # Modos de coordenadas
+            # M-Codes
+            # -------------------------
+
+            if gcode == "M0":
+
+                movements.append(
+                    {
+                        "command": "M0",
+                        "action": "pause"
+                    }
+                )
+
+                continue
+
+
+
+            elif gcode == "M2":
+
+                movements.append(
+                    {
+                        "command": "M2",
+                        "action": "program_end"
+                    }
+                )
+
+                continue
+
+
+
+            elif gcode == "M3":
+
+                spindle_speed = None
+
+                if "parameters" in command:
+
+                    spindle_speed = command["parameters"].get("S")
+
+
+                movements.append(
+                    {
+                        "command": "M3",
+                        "spindle_speed": spindle_speed
+                    }
+                )
+
+                continue
+
+
+
+            elif gcode == "M5":
+
+                movements.append(
+                    {
+                        "command": "M5",
+                        "action": "spindle_stop"
+                    }
+                )
+
+                continue
+
+
+
+            # -------------------------
+            # Modos coordenadas
             # -------------------------
 
             if gcode == "G90":
@@ -59,7 +121,7 @@ class MotionPlanner:
 
 
             # -------------------------
-            # Cambio de unidades
+            # Unidades
             # -------------------------
 
             elif gcode == "G20":
@@ -125,7 +187,7 @@ class MotionPlanner:
 
 
 
-                # Conversión pulgadas a mm
+                # Conversión pulgadas
 
                 if self.units == "inch":
 
@@ -167,8 +229,6 @@ class MotionPlanner:
             }
 
 
-
-            # Añadir feed rate si existe
 
             if self.feed_rate is not None:
 
