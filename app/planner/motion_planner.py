@@ -17,14 +17,18 @@ class MotionPlanner:
             "Z": 0.0,
         }
 
-        # G90 por defecto
         self.coordinate_mode = "absolute"
 
-        # Feed rate actual
         self.feed_rate = None
 
-        # G21 por defecto (milímetros)
         self.units = "mm"
+
+        # G92 offsets
+        self.offset = {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0,
+        }
 
 
     def plan(self, commands):
@@ -36,8 +40,6 @@ class MotionPlanner:
 
             gcode = command.get("command")
 
-
-            # Cambiar modo de coordenadas
 
             if gcode == "G90":
 
@@ -51,8 +53,6 @@ class MotionPlanner:
                 continue
 
 
-            # Cambiar unidades
-
             elif gcode == "G20":
 
                 self.units = "inch"
@@ -62,6 +62,19 @@ class MotionPlanner:
             elif gcode == "G21":
 
                 self.units = "mm"
+                continue
+
+
+            elif gcode == "G92":
+
+                for axis, value in command["parameters"].items():
+
+                    if axis in ["X", "Y", "Z"]:
+
+                        self.offset[axis] = (
+                            self.position[axis] - value
+                        )
+
                 continue
 
 
@@ -75,8 +88,6 @@ class MotionPlanner:
             for axis, value in command["parameters"].items():
 
 
-                # Feed Rate
-
                 if axis == "F":
 
                     self.feed_rate = value
@@ -84,15 +95,11 @@ class MotionPlanner:
 
 
 
-                # Ignorar otros parámetros
-
                 if axis not in ["X", "Y", "Z"]:
 
                     continue
 
 
-
-                # Conversión pulgadas -> mm
 
                 if self.units == "inch":
 
@@ -100,15 +107,11 @@ class MotionPlanner:
 
 
 
-                # Movimiento absoluto
-
                 if self.coordinate_mode == "absolute":
 
-                    self.position[axis] = value
-
-
-
-                # Movimiento relativo
+                    self.position[axis] = (
+                        value + self.offset[axis]
+                    )
 
                 else:
 
@@ -133,7 +136,6 @@ class MotionPlanner:
             }
 
 
-
             if self.feed_rate is not None:
 
                 movement["feed_rate"] = self.feed_rate
@@ -141,7 +143,6 @@ class MotionPlanner:
 
 
             movements.append(movement)
-
 
 
         return movements
