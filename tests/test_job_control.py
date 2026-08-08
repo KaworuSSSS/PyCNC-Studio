@@ -218,4 +218,4 @@ def test_job_stop_cannot_resume():
 
     assert job.status == "stopped"
     assert result == "Job is not paused"
-```
+
