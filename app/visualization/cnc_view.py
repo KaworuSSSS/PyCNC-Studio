@@ -1,5 +1,7 @@
 import plotly.graph_objects as go
 
+from app.visualization.cnc_machine_3d import CNCMachine3D
+
 
 class CNCView:
 
@@ -9,69 +11,36 @@ class CNCView:
 
     def create_figure(self):
 
+        machine = CNCMachine3D()
+
+        fig = machine.build()
+
         status = self.simulator.get_status()
 
         position = status["position"]
 
         toolpath = self.simulator.get_toolpath()
 
-        fig = go.Figure()
-
-        # Mesa CNC
-
-        fig.add_trace(
-            go.Mesh3d(
-                x=[
-                    0, 100, 100, 0,
-                    0, 100, 100, 0
-                ],
-                y=[
-                    0, 0, 60, 60,
-                    0, 0, 60, 60
-                ],
-                z=[
-                    0, 0, 0, 0,
-                    -5, -5, -5, -5
-                ],
-                i=[0, 0, 0, 4, 4, 4],
-                j=[1, 2, 3, 5, 6, 7],
-                k=[2, 3, 1, 6, 7, 5],
-                opacity=0.35,
-                name="Mesa",
-            )
-        )
-
-        # Material
-
-        fig.add_trace(
-            go.Mesh3d(
-                x=[
-                    10, 90, 90, 10,
-                    10, 90, 90, 10
-                ],
-                y=[
-                    10, 10, 50, 50,
-                    10, 10, 50, 50
-                ],
-                z=[
-                    0, 0, 0, 0,
-                    10, 10, 10, 10
-                ],
-                i=[0, 0, 0, 4, 4, 4],
-                j=[1, 2, 3, 5, 6, 7],
-                k=[2, 3, 1, 6, 7, 5],
-                opacity=0.5,
-                name="Material",
-            )
-        )
-
-        # Toolpath
+        # -------------------------------------------------
+        # TOOLPATH
+        # -------------------------------------------------
 
         if toolpath:
 
-            x = [point["x"] for point in toolpath]
-            y = [point["y"] for point in toolpath]
-            z = [point["z"] for point in toolpath]
+            x = [
+                point["x"]
+                for point in toolpath
+            ]
+
+            y = [
+                point["y"]
+                for point in toolpath
+            ]
+
+            z = [
+                point["z"]
+                for point in toolpath
+            ]
 
             fig.add_trace(
                 go.Scatter3d(
@@ -85,7 +54,9 @@ class CNCView:
                 )
             )
 
-        # Herramienta
+        # -------------------------------------------------
+        # POSICION DE LA HERRAMIENTA
+        # -------------------------------------------------
 
         tool_x = position["x"]
         tool_y = position["y"]
@@ -99,69 +70,66 @@ class CNCView:
                 mode="markers",
                 name="Herramienta",
                 marker=dict(
-                    size=10,
+                    size=12,
                     symbol="diamond",
                 ),
             )
         )
 
-        # Spindle
-
-        fig.add_trace(
-            go.Scatter3d(
-                x=[tool_x, tool_x],
-                y=[tool_y, tool_y],
-                z=[tool_z, tool_z - 8],
-                mode="lines",
-                name="Spindle",
-                line=dict(width=8),
-                showlegend=False,
-            )
-        )
-
-        # Eje X
+        # -------------------------------------------------
+        # EJE X
+        # -------------------------------------------------
 
         fig.add_trace(
             go.Scatter3d(
                 x=[0, 30],
                 y=[0, 0],
-                z=[-6, -6],
+                z=[2, 2],
                 mode="lines",
                 name="X",
-                line=dict(width=5),
+                line=dict(width=6),
             )
         )
 
-        # Eje Y
+        # -------------------------------------------------
+        # EJE Y
+        # -------------------------------------------------
 
         fig.add_trace(
             go.Scatter3d(
                 x=[0, 0],
                 y=[0, 30],
-                z=[-6, -6],
+                z=[2, 2],
                 mode="lines",
                 name="Y",
-                line=dict(width=5),
+                line=dict(width=6),
             )
         )
 
-        # Eje Z
+        # -------------------------------------------------
+        # EJE Z
+        # -------------------------------------------------
 
         fig.add_trace(
             go.Scatter3d(
                 x=[0, 0],
                 y=[0, 0],
-                z=[-6, 24],
+                z=[2, 30],
                 mode="lines",
                 name="Z",
-                line=dict(width=5),
+                line=dict(width=6),
             )
         )
 
+        # -------------------------------------------------
+        # ESCENA
+        # -------------------------------------------------
+
         fig.update_layout(
-            title="PyCNC Studio — CNC Virtual 3D",
+            title="PyCNC Studio — Virtual CNC",
 
             scene=dict(
+
                 xaxis=dict(
                     title="X (mm)",
                     range=[-10, 110],
@@ -169,12 +137,12 @@ class CNCView:
 
                 yaxis=dict(
                     title="Y (mm)",
-                    range=[-10, 70],
+                    range=[-10, 80],
                 ),
 
                 zaxis=dict(
                     title="Z (mm)",
-                    range=[-15, 30],
+                    range=[0, 80],
                 ),
 
                 aspectmode="manual",
@@ -182,7 +150,15 @@ class CNCView:
                 aspectratio=dict(
                     x=1.5,
                     y=1,
-                    z=0.6,
+                    z=1,
+                ),
+
+                camera=dict(
+                    eye=dict(
+                        x=1.6,
+                        y=1.6,
+                        z=1.2,
+                    )
                 ),
             ),
 
@@ -190,7 +166,15 @@ class CNCView:
                 l=0,
                 r=0,
                 b=0,
-                t=40,
+                t=45,
+            ),
+
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="left",
+                x=0,
             ),
         )
 
