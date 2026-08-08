@@ -320,6 +320,51 @@ def test_job_records_motion_path():
         }
     ]
 
+def test_job_execution_state():
 
+    machine = create_machine()
+
+    job = JobManager(machine)
+
+    commands = [
+        {
+            "command": "G0",
+            "target": {
+                "X": 20,
+                "Y": 10,
+                "Z": 0
+            }
+        },
+        {
+            "command": "G1",
+            "target": {
+                "X": 50,
+                "Y": 10,
+                "Z": -5
+            }
+        },
+        {
+            "command": "G1",
+            "target": {
+                "X": 50,
+                "Y": 40,
+                "Z": -5
+            }
+        }
+    ]
+
+    job.load(commands)
+
+    job.start()
+
+    status = machine.status()
+
+    assert job.status == "completed"
+
+    assert status["position"]["X"] == 50
+    assert status["position"]["Y"] == 40
+    assert status["position"]["Z"] == -5
+
+    assert job.progress == 100.0
 
 
