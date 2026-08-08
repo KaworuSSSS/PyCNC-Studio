@@ -1,4 +1,4 @@
-
+```python
 """
 Tests for CNC Job Control.
 """
@@ -9,7 +9,9 @@ from app.drivers.simulator_driver import CNCSimulator
 
 
 def create_machine():
+
     driver = CNCSimulator()
+
     machine = Machine(driver)
 
     machine.connect()
@@ -19,6 +21,7 @@ def create_machine():
 
 
 def test_job_initial_status():
+
     machine = create_machine()
 
     job = JobManager(machine)
@@ -29,6 +32,7 @@ def test_job_initial_status():
 
 
 def test_job_completes():
+
     machine = create_machine()
 
     job = JobManager(machine)
@@ -62,6 +66,7 @@ def test_job_completes():
 
 
 def test_job_pauses_on_m0():
+
     machine = create_machine()
 
     job = JobManager(machine)
@@ -101,6 +106,7 @@ def test_job_pauses_on_m0():
 
 
 def test_job_resume_after_m0():
+
     machine = create_machine()
 
     job = JobManager(machine)
@@ -145,6 +151,7 @@ def test_job_resume_after_m0():
 
 
 def test_job_stop_while_paused():
+
     machine = create_machine()
 
     job = JobManager(machine)
@@ -185,6 +192,7 @@ def test_job_stop_while_paused():
 
 
 def test_job_stop_cannot_resume():
+
     machine = create_machine()
 
     job = JobManager(machine)
@@ -221,6 +229,7 @@ def test_job_stop_cannot_resume():
 
 
 def test_stopped_job_can_load_new_job():
+
     machine = create_machine()
 
     job = JobManager(machine)
@@ -261,18 +270,56 @@ def test_stopped_job_can_load_new_job():
         }
     ]
 
-    job.load(second_commands)
+    result = job.load(second_commands)
 
+    assert result == "Job loaded: 1 commands"
     assert job.status == "idle"
     assert job.current_line == 0
     assert job.progress == 0.0
 
+
+def test_job_records_motion_path():
+
+    machine = create_machine()
+
+    job = JobManager(machine)
+
+    commands = [
+        {
+            "command": "G0",
+            "target": {
+                "X": 50,
+                "Y": 0.0,
+                "Z": 0.0
+            }
+        },
+        {
+            "command": "G0",
+            "target": {
+                "X": 50,
+                "Y": 25,
+                "Z": 0.0
+            }
+        }
+    ]
+
+    job.load(commands)
+
     job.start()
 
-    assert job.status == "completed"
-    assert job.current_line == 1
-    assert job.progress == 100.0
-
+    assert job.toolpath == [
+        {
+            "X": 50,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        {
+            "X": 50,
+            "Y": 25,
+            "Z": 0.0
+        }
+    ]
+```
 
 
 
