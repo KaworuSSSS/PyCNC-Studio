@@ -1,4 +1,4 @@
-```python
+
 """
 Tests for CNC Job Control.
 """
@@ -319,7 +319,7 @@ def test_job_records_motion_path():
             "Z": 0.0
         }
     ]
-```
+
 
 
 
