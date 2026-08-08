@@ -2563,6 +2563,7 @@ function simulate(delta) {
 
 
 
+
 /* =========================================================
    START
    ========================================================= */
@@ -2571,6 +2572,30 @@ document
     .getElementById("start")
     .onclick =
     () => {
+
+        /*
+         * Si el programa terminó,
+         * START vuelve a comenzar desde
+         * el primer punto.
+         */
+
+        if (
+            state.toolpathIndex >=
+            3
+        ) {
+
+            state.toolpathIndex =
+                0;
+
+            pathPoints.length =
+                0;
+
+            pathGeometry.setFromPoints(
+                []
+            );
+
+        }
+
 
         state.running =
             true;
@@ -2581,11 +2606,13 @@ document
         state.stopped =
             false;
 
+
         setStatus(
             "RUNNING"
         );
 
     };
+
 
 
 /* =========================================================
