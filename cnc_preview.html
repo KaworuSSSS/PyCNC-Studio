@@ -2917,6 +2917,289 @@ window.addEventListener(
 
 let previous =
     performance.now();
+	/* =========================================================
+   CNC SIMULATION
+   ========================================================= */
+
+function simulate(now) {
+
+    /*
+     * First frame
+     */
+
+    if (
+        state.lastTime === undefined
+    ) {
+
+        state.lastTime = now;
+
+        return;
+
+    }
+
+
+    /*
+     * Calculate elapsed time
+     */
+
+    const delta =
+        (now - state.lastTime) / 1000;
+
+    state.lastTime = now;
+
+
+    /*
+     * Nothing to do when machine
+     * is not running.
+     */
+
+    if (
+        !state.running
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+     * Current CNC program
+     */
+
+    const toolpath =
+        CNC_PROGRAM.toolpath;
+
+
+    /*
+     * Program finished
+     */
+
+    if (
+        state.toolpathIndex >=
+        toolpath.length
+    ) {
+
+        state.running = false;
+
+        state.paused = false;
+
+        state.stopped = false;
+
+        state.completed = true;
+
+
+        setStatus(
+            "COMPLETED"
+        );
+
+
+        document
+            .getElementById("start")
+            .textContent =
+            "↻ RESTART";
+
+
+        updateHUD();
+
+        return;
+
+    }
+
+
+    /*
+     * Current target
+     */
+
+    const target =
+        toolpath[
+            state.toolpathIndex
+        ];
+
+
+    /*
+     * Simulation speed.
+     *
+     * The slider changes the movement
+     * speed without changing the
+     * coordinates.
+     */
+
+    const movementSpeed =
+        40 * state.speed;
+
+
+    /*
+     * Current position
+     */
+
+    const current = {
+
+        X: machineX,
+
+        Y: machineY,
+
+        Z: machineZ
+
+    };
+
+
+    /*
+     * Distance to target
+     */
+
+    const dx =
+        target.X - current.X;
+
+    const dy =
+        target.Y - current.Y;
+
+    const dz =
+        target.Z - current.Z;
+
+
+    const distance =
+        Math.sqrt(
+            dx * dx +
+            dy * dy +
+            dz * dz
+        );
+
+
+    /*
+     * Target reached
+     */
+
+    if (
+        distance < 0.05
+    ) {
+
+        machineX =
+            target.X;
+
+        machineY =
+            target.Y;
+
+        machineZ =
+            target.Z;
+
+
+        /*
+         * Add point to visible toolpath
+         */
+
+        if (
+            typeof pathPoints !==
+            "undefined"
+        ) {
+
+            pathPoints.push(
+                new THREE.Vector3(
+                    machineX,
+                    machineZ,
+                    machineY
+                )
+            );
+
+        }
+
+
+        if (
+            typeof pathGeometry !==
+            "undefined"
+        ) {
+
+            pathGeometry.setFromPoints(
+                pathPoints
+            );
+
+        }
+
+
+        /*
+         * Move to next command
+         */
+
+        state.toolpathIndex++;
+
+
+        updateHUD();
+
+        return;
+
+    }
+
+
+    /*
+     * Movement for this frame
+     */
+
+    const step =
+        movementSpeed * delta;
+
+
+    const ratio =
+        Math.min(
+            step / distance,
+            1
+        );
+
+
+    machineX +=
+        dx * ratio;
+
+    machineY +=
+        dy * ratio;
+
+    machineZ +=
+        dz * ratio;
+
+
+    /*
+     * Respect machine limits
+     */
+
+    clampMachine();
+
+
+    /*
+     * Add current point to toolpath
+     */
+
+    if (
+        typeof pathPoints !==
+        "undefined"
+    ) {
+
+        pathPoints.push(
+            new THREE.Vector3(
+                machineX,
+                machineZ,
+                machineY
+            )
+        );
+
+    }
+
+
+    if (
+        typeof pathGeometry !==
+        "undefined"
+    ) {
+
+        pathGeometry.setFromPoints(
+            pathPoints
+        );
+
+    }
+
+
+    /*
+     * Update HUD
+     */
+
+    updateHUD();
+
+}
 
 
 function animate(now) {
