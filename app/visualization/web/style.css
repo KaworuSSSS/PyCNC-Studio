@@ -1,0 +1,146 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    background: #111;
+}
+
+#app {
+    width: 100%;
+    height: 100%;
+
+    position: relative;
+}
+
+#viewport {
+    width: 100%;
+    height: 100%;
+}
+
+canvas {
+    display: block;
+}
+
+#hud {
+
+    position: absolute;
+
+    top: 20px;
+    left: 20px;
+
+    padding: 18px 22px;
+
+    min-width: 210px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(15, 18, 22, 0.88);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    color: white;
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    backdrop-filter:
+        blur(10px);
+}
+
+.title {
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+}
+
+.subtitle {
+
+    margin-top: 3px;
+
+    font-size: 11px;
+
+    letter-spacing: 3px;
+
+    opacity: 0.55;
+}
+
+.status {
+
+    margin-top: 18px;
+
+    display: grid;
+
+    gap: 7px;
+
+    font-size: 13px;
+}
+
+.status span {
+
+    display: inline-block;
+
+    width: 20px;
+
+    font-weight: 700;
+}
+
+.status strong {
+
+    display: inline-block;
+
+    width: 65px;
+
+    text-align: right;
+
+    margin-right: 5px;
+}
+
+.machine-state {
+
+    margin-top: 18px;
+
+    padding-top: 12px;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    font-size: 12px;
+
+    letter-spacing: 1px;
+}
+
+.indicator {
+
+    display: inline-block;
+
+    width: 8px;
+    height: 8px;
+
+    margin-right: 8px;
+
+    border-radius: 50%;
+
+    background: #45d483;
+
+    box-shadow:
+        0 0 10px
+        rgba(69, 212, 131, 0.8);
+}
