@@ -1,4 +1,4 @@
-```python
+
 """
 PyCNC Studio
 Job Manager
@@ -298,4 +298,4 @@ class JobManager:
         self.status = "stopped"
 
         return "Job stopped"
-```
+
