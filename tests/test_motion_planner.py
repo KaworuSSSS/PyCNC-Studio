@@ -372,3 +372,35 @@ def test_units_can_change_during_job():
     assert result[1]["target"]["X"] == 25.4
     assert result[2]["target"]["X"] == 20
 
+
+def test_g92_redefines_coordinate_system():
+
+    planner = MotionPlanner()
+
+    commands = [
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 50
+            }
+        },
+        {
+            "command": "G92",
+            "parameters": {
+                "X": 0
+            }
+        },
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 25
+            }
+        }
+    ]
+
+    result = planner.plan(commands)
+
+    assert planner.position["X"] == 25
+    assert result[0]["target"]["X"] == 50
+    assert result[1]["target"]["X"] == 25
+
