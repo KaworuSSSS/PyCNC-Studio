@@ -51,6 +51,12 @@ class GCodeParser:
 
             axis = item[0]
 
+            if axis not in ["X", "Y", "Z", "F", "S"]:
+
+                raise ValueError(
+                    f"Unsupported parameter '{axis}'"
+                )
+
             value = float(item[1:])
 
             parameters[axis] = value
