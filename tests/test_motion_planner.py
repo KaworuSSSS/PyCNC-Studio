@@ -289,3 +289,86 @@ def test_g92_after_offset_move():
     result = planner.plan(commands)
 
     assert result[0]["target"]["X"] == 110
+
+
+def test_coordinate_mode_can_change_during_job():
+
+    planner = MotionPlanner()
+
+    commands = [
+        {
+            "command": "G90"
+        },
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 50
+            }
+        },
+        {
+            "command": "G91"
+        },
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 10
+            }
+        },
+        {
+            "command": "G90"
+        },
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 100
+            }
+        }
+    ]
+
+    result = planner.plan(commands)
+
+    assert result[0]["target"]["X"] == 50
+    assert result[1]["target"]["X"] == 60
+    assert result[2]["target"]["X"] == 100
+
+
+def test_units_can_change_during_job():
+
+    planner = MotionPlanner()
+
+    commands = [
+        {
+            "command": "G21"
+        },
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 10
+            }
+        },
+        {
+            "command": "G20"
+        },
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 1
+            }
+        },
+        {
+            "command": "G21"
+        },
+        {
+            "command": "G0",
+            "parameters": {
+                "X": 20
+            }
+        }
+    ]
+
+    result = planner.plan(commands)
+
+    assert result[0]["target"]["X"] == 10
+    assert result[1]["target"]["X"] == 25.4
+    assert result[2]["target"]["X"] == 20
+
