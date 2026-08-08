@@ -46,3 +46,17 @@ def test_feed_rate_parameter():
     assert result["command"] == "G1"
     assert result["parameters"]["X"] == 10
     assert result["parameters"]["F"] == 500
+
+def test_inline_comment():
+
+    parser = GCodeParser()
+
+    result = parser.parse_line(
+        "G1 X50 Y20 F800 ; move to position"
+    )
+
+    assert result["command"] == "G1"
+    assert result["parameters"]["X"] == 50
+    assert result["parameters"]["Y"] == 20
+    assert result["parameters"]["F"] == 800
+
