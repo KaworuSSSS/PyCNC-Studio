@@ -1,7 +1,7 @@
 """
 G-Code Parser Tests
 """
-
+import pytest
 from app.gcode.parser import GCodeParser
 
 
@@ -59,4 +59,14 @@ def test_inline_comment():
     assert result["parameters"]["X"] == 50
     assert result["parameters"]["Y"] == 20
     assert result["parameters"]["F"] == 800
+
+def test_unknown_parameter_is_rejected():
+
+    parser = GCodeParser()
+
+    with pytest.raises(ValueError, match="Unsupported parameter 'Q'"):
+        parser.parse_line(
+            "G1 X50 Q999"
+        )
+
 
