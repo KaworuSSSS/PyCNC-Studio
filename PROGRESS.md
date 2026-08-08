@@ -36,6 +36,10 @@ Durante el desarrollo inicial se creó una arquitectura modular que permite prob
 
 # Lo que ya está funcionando
 
+
+
+
+
 ## 1. Arquitectura base
 
 Estructura creada:
@@ -942,3 +946,9 @@ Empezar implementación de:
 v0.11 CNC Job Control
 
 Mañana con este texto podemos continuar directamente desde **JobManager avanzado** sin repetir todo el desarrollo. Buen avance hoy: el proyecto ya tiene una base de intérprete CNC bastante ordenada.
+
+
+
+
+https://kaworussss.github.io/PyCNC-Studio/cnc_preview.html
+
