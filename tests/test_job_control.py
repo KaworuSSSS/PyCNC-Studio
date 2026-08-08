@@ -1,4 +1,4 @@
-```python
+
 """
 Tests for CNC Job Control.
 """
