@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>PyCNC Studio</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+<body>
+
+    <div id="app">
+
+        <div id="viewport"></div>
+
+        <div id="hud">
+
+            <div class="title">
+                PyCNC Studio
+            </div>
+
+            <div class="subtitle">
+                VIRTUAL CNC
+            </div>
+
+            <div class="status">
+
+                <div>
+                    <span>X</span>
+                    <strong id="pos-x">0.00</strong>
+                    mm
+                </div>
+
+                <div>
+                    <span>Y</span>
+                    <strong id="pos-y">0.00</strong>
+                    mm
+                </div>
+
+                <div>
+                    <span>Z</span>
+                    <strong id="pos-z">0.00</strong>
+                    mm
+                </div>
+
+            </div>
+
+            <div class="machine-state">
+
+                <span class="indicator"></span>
+
+                <span id="machine-state">
+                    READY
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script
+        type="importmap"
+    >
+    {
+        "imports": {
+            "three":
+                "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+
+            "three/addons/":
+                "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+        }
+    }
+    </script>
+
+
+    <script
+        type="module"
+        src="cnc.js"
+    ></script>
+
+</body>
+
+</html>
