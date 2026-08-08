@@ -1,3 +1,4 @@
+```python
 """
 PyCNC Studio
 Job Manager
@@ -122,7 +123,7 @@ class JobManager:
                         - self.current_position[axis]
                     )
 
-                    result = self.machine.jog(
+                    self.machine.jog(
                         axis,
                         distance
                     )
@@ -171,7 +172,7 @@ class JobManager:
 
                 if axis in ["X", "Y", "Z"]:
 
-                    result = self.machine.jog(
+                    self.machine.jog(
                         axis,
                         value
                     )
@@ -182,33 +183,42 @@ class JobManager:
 
         return None
 
-    def start(self):
+    def _execute_next(self):
 
-        if not self.commands:
+        """
+        Execute the next command in the job.
 
-            return "No job loaded"
+        Returns:
+            command result, or None when there are no more commands.
+        """
 
-        # If the job is paused, use resume()
-        # instead of restarting it.
-        if self.status == "paused":
+        if self.current_line >= len(self.commands):
 
-            return "Job is paused"
+            return None
 
-        self.running = True
-        self.status = "running"
+        command = self.commands[self.current_line]
+
+        result = self._execute_command(command)
+
+        # The command has now been processed.
+        self.current_line += 1
+
+        self._update_progress()
+
+        return result
+
+    def _run(self):
+
+        """
+        Execute commands until the job pauses,
+        completes, stops, or reaches the end.
+        """
 
         results = []
 
         while self.current_line < len(self.commands):
 
-            command = self.commands[self.current_line]
-
-            result = self._execute_command(command)
-
-            # The command has now been processed.
-            self.current_line += 1
-
-            self._update_progress()
+            result = self._execute_next()
 
             if result is not None:
 
@@ -229,6 +239,13 @@ class JobManager:
 
                 return results
 
+            # Stop is a terminal state.
+            if self.status == "stopped":
+
+                self.running = False
+
+                return results
+
         # Normal end of program
         self.running = False
         self.status = "completed"
@@ -237,6 +254,32 @@ class JobManager:
         self.progress = 100.0
 
         return results
+
+    def start(self):
+
+        if not self.commands:
+
+            return "No job loaded"
+
+        # A stopped or completed job cannot be restarted.
+        if self.status == "stopped":
+
+            return "Job is stopped"
+
+        if self.status == "completed":
+
+            return "Job is already completed"
+
+        # If the job is paused, use resume()
+        # instead of restarting it.
+        if self.status == "paused":
+
+            return "Job is paused"
+
+        self.running = True
+        self.status = "running"
+
+        return self._run()
 
     def resume(self):
 
@@ -247,45 +290,7 @@ class JobManager:
         self.running = True
         self.status = "running"
 
-        results = []
-
-        while self.current_line < len(self.commands):
-
-            command = self.commands[self.current_line]
-
-            result = self._execute_command(command)
-
-            self.current_line += 1
-
-            self._update_progress()
-
-            if result is not None:
-
-                results.append(result)
-
-            # Another M0 can pause the job again.
-            if self.status == "paused":
-
-                self.running = False
-
-                return results
-
-            # M2 ends the program.
-            if self.status == "completed":
-
-                self.running = False
-                self.progress = 100.0
-
-                return results
-
-        # Job finished after resume
-        self.running = False
-        self.status = "completed"
-
-        self.current_line = len(self.commands)
-        self.progress = 100.0
-
-        return results
+        return self._run()
 
     def stop(self):
 
@@ -293,3 +298,4 @@ class JobManager:
         self.status = "stopped"
 
         return "Job stopped"
+```
