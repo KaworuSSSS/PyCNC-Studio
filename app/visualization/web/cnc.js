@@ -1,7 +1,9 @@
+```javascript
 import * as THREE from "three";
 
-import { OrbitControls } from
-    "three/addons/controls/OrbitControls.js";
+import {
+    OrbitControls
+} from "three/addons/controls/OrbitControls.js";
 
 
 // =====================================================
@@ -21,8 +23,7 @@ scene.background =
 const camera =
     new THREE.PerspectiveCamera(
         45,
-        window.innerWidth /
-        window.innerHeight,
+        window.innerWidth / window.innerHeight,
         0.1,
         1000
     );
@@ -76,9 +77,9 @@ const controls =
     );
 
 controls.target.set(
-    50,
-    25,
-    35
+    0,
+    30,
+    0
 );
 
 controls.enableDamping = true;
@@ -179,7 +180,7 @@ scene.add(machine);
 
 
 // =====================================================
-// HELPER: BOX
+// BOX HELPER
 // =====================================================
 
 function box(
@@ -211,7 +212,7 @@ function box(
 
 
 // =====================================================
-// HELPER: CYLINDER
+// CYLINDER HELPER
 // =====================================================
 
 function cylinder(
@@ -351,48 +352,6 @@ machine.add(rightSupport);
 
 
 // =====================================================
-// Y RAILS
-// =====================================================
-
-const leftRail =
-    cylinder(
-        2,
-        70,
-        darkMetal
-    );
-
-leftRail.rotation.z =
-    Math.PI / 2;
-
-leftRail.position.set(
-    -52,
-    18,
-    0
-);
-
-machine.add(leftRail);
-
-
-const rightRail =
-    cylinder(
-        2,
-        70,
-        darkMetal
-    );
-
-rightRail.rotation.z =
-    Math.PI / 2;
-
-rightRail.position.set(
-    52,
-    18,
-    0
-);
-
-machine.add(rightRail);
-
-
-// =====================================================
 // GANTRY
 // =====================================================
 
@@ -401,10 +360,6 @@ const gantry =
 
 machine.add(gantry);
 
-
-// =====================================================
-// GANTRY COLUMNS
-// =====================================================
 
 const gantryLeft =
     box(
@@ -512,12 +467,6 @@ const carriage =
 
 gantry.add(carriage);
 
-carriage.position.set(
-    0,
-    0,
-    0
-);
-
 
 // =====================================================
 // CARRIAGE BODY
@@ -586,8 +535,6 @@ const spindle =
 carriage.add(spindle);
 
 
-// spindle body
-
 const spindleBody =
     cylinder(
         7,
@@ -603,8 +550,6 @@ spindleBody.position.set(
 
 spindle.add(spindleBody);
 
-
-// spindle nose
 
 const spindleNose =
     cylinder(
@@ -696,8 +641,6 @@ const grid =
         0x222222
     );
 
-grid.position.y = 0;
-
 scene.add(grid);
 
 
@@ -727,7 +670,95 @@ const machinePosition = {
 
 
 // =====================================================
-// UPDATE TOOL POSITION
+// DEMO JOB DATA
+// =====================================================
+
+const jobData = {
+
+    status: "completed",
+
+    position: {
+
+        X: 50,
+        Y: 40,
+        Z: -5
+
+    },
+
+    toolpath: [
+
+        {
+            X: 20,
+            Y: 10,
+            Z: 0
+        },
+
+        {
+            X: 50,
+            Y: 10,
+            Z: -5
+        },
+
+        {
+            X: 50,
+            Y: 40,
+            Z: -5
+        }
+
+    ],
+
+    progress: 100
+
+};
+
+
+// =====================================================
+// UPDATE TOOLPATH
+// =====================================================
+
+function updateToolpath() {
+
+    if (
+        !jobData.toolpath ||
+        jobData.toolpath.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    const points = [];
+
+
+    for (
+        const point of jobData.toolpath
+    ) {
+
+        points.push(
+
+            new THREE.Vector3(
+                point.X,
+                point.Z + 12,
+                point.Y
+            )
+
+        );
+
+    }
+
+
+    pathGeometry.setFromPoints(
+        points
+    );
+
+    pathGeometry.computeBoundingSphere();
+
+}
+
+
+// =====================================================
+// UPDATE MACHINE
 // =====================================================
 
 function updateMachine() {
@@ -742,19 +773,19 @@ function updateMachine() {
         machinePosition.z;
 
 
-    // Y moves the gantry
-
-    gantry.position.z =
-        y;
-
-
-    // X moves carriage
+    // X axis
 
     carriage.position.x =
         x;
 
 
-    // Z moves spindle
+    // Y axis
+
+    gantry.position.z =
+        y;
+
+
+    // Z axis
 
     spindle.position.y =
         -z;
@@ -765,39 +796,44 @@ function updateMachine() {
         .textContent =
         x.toFixed(2);
 
+
     document
         .getElementById("pos-y")
         .textContent =
         y.toFixed(2);
 
+
     document
         .getElementById("pos-z")
         .textContent =
         z.toFixed(2);
+
+
+    document
+        .getElementById("machine-state")
+        .textContent =
+        jobData.status.toUpperCase();
+
 }
 
 
 // =====================================================
-// DEMO MOTION
+// APPLY JOB POSITION
 // =====================================================
 
-let time = 0;
-
-function demoMotion() {
-
-    time += 0.008;
+function applyJobPosition() {
 
     machinePosition.x =
-        Math.sin(time) * 35;
+        jobData.position.X;
 
     machinePosition.y =
-        Math.cos(time * 0.7) * 20;
+        jobData.position.Y;
 
     machinePosition.z =
-        8 +
-        Math.sin(time * 1.5) * 5;
+        jobData.position.Z;
 
     updateMachine();
+
 }
 
 
@@ -834,17 +870,23 @@ function animate() {
         animate
     );
 
-    demoMotion();
-
     controls.update();
 
     renderer.render(
         scene,
         camera
     );
+
 }
 
 
-updateMachine();
+// =====================================================
+// INITIALIZE
+// =====================================================
+
+updateToolpath();
+
+applyJobPosition();
 
 animate();
+```
