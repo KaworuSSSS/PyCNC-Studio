@@ -1,417 +1,255 @@
 <!DOCTYPE html>
 
 <html lang="es">
-
 <head>
-
-```
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-    PyCNC Studio — Virtual CNC
-</title>
-
-
-<!-- =====================================================
-     THREE.JS IMPORT MAP
-
-     OrbitControls importa "three" por nombre.
-     Este mapa le dice al navegador dónde encontrarlo.
-====================================================== -->
-
-<script type="importmap">
-{
-    "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
-    }
-}
-</script>
-
-
-<!-- =====================================================
-     STYLE
-====================================================== -->
+<title>PyCNC Studio — Virtual CNC</title>
 
 <style>
+* {
+    box-sizing: border-box;
+}
 
-    * {
-        box-sizing: border-box;
-    }
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #0b0e11;
+    font-family: Arial, Helvetica, sans-serif;
+}
 
+#viewport {
+    position: fixed;
+    inset: 0;
+}
 
-    html,
-    body {
+canvas {
+    display: block;
+}
 
-        width: 100%;
-        height: 100%;
+/* ---------------- HUD ---------------- */
 
-        margin: 0;
+#hud {
+    position: fixed;
+    z-index: 20;
+    top: 18px;
+    left: 18px;
 
-        overflow: hidden;
+    width: 250px;
+    padding: 18px;
 
-        background: #11151a;
+    color: #e9edf0;
 
-        font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
-    }
+    background: rgba(12, 16, 20, 0.90);
 
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
 
-    #viewport {
+    box-shadow:
+        0 18px 50px rgba(0,0,0,0.45);
 
-        position: fixed;
+    backdrop-filter: blur(12px);
+}
 
-        inset: 0;
+.title {
+    font-size: 21px;
+    font-weight: bold;
+}
 
-        width: 100%;
-        height: 100%;
+.subtitle {
+    margin-top: 4px;
 
-        background: #11151a;
-    }
+    color: #89939a;
 
+    font-size: 9px;
+    letter-spacing: 3px;
+}
 
-    canvas {
+.separator {
+    height: 1px;
 
-        display: block;
-    }
+    margin: 14px 0;
 
+    background: rgba(255,255,255,0.10);
+}
 
-    /* ==================================================
-       HUD
-    ================================================== */
+.coordinate {
+    display: flex;
+    justify-content: space-between;
 
-    #hud {
+    margin: 9px 0;
 
-        position: fixed;
+    font-size: 13px;
+}
 
-        top: 20px;
-        left: 20px;
+.axis-x {
+    color: #ef6666;
+    font-weight: bold;
+}
 
-        z-index: 100;
+.axis-y {
+    color: #62d48a;
+    font-weight: bold;
+}
 
-        width: 250px;
+.axis-z {
+    color: #70a8ef;
+    font-weight: bold;
+}
 
-        padding: 18px 20px;
+.status {
+    font-size: 10px;
+    letter-spacing: 2px;
+}
 
-        color: white;
+.status-dot {
+    display: inline-block;
 
-        background:
-            rgba(10, 14, 18, 0.90);
+    width: 7px;
+    height: 7px;
 
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.12);
+    margin-right: 7px;
 
-        border-radius: 12px;
+    border-radius: 50%;
 
-        box-shadow:
-            0 15px 40px
-            rgba(0, 0, 0, 0.40);
+    background: #45d27a;
 
-        backdrop-filter:
-            blur(10px);
-    }
+    box-shadow: 0 0 10px #45d27a;
+}
 
+/* ---------------- CONTROLS ---------------- */
 
-    .title {
+#controls {
+    position: fixed;
+    z-index: 20;
 
-        font-size: 21px;
+    top: 18px;
+    right: 18px;
 
-        font-weight: 700;
+    width: 210px;
 
-        letter-spacing: 0.2px;
-    }
+    padding: 14px;
 
+    color: white;
 
-    .subtitle {
+    background: rgba(12,16,20,0.90);
 
-        margin-top: 5px;
+    border: 1px solid rgba(255,255,255,0.12);
 
-        font-size: 10px;
+    border-radius: 12px;
 
-        letter-spacing: 3px;
+    backdrop-filter: blur(12px);
+}
 
-        opacity: 0.45;
-    }
+button {
+    width: 100%;
 
+    margin: 3px 0;
 
-    .separator {
+    padding: 10px;
 
-        height: 1px;
+    border: none;
 
-        margin: 14px 0;
+    border-radius: 6px;
 
-        background:
-            rgba(255, 255, 255, 0.10);
-    }
+    background: #30373d;
 
+    color: #f3f5f6;
 
-    .coordinate {
+    cursor: pointer;
+}
 
-        display: flex;
+button:hover {
+    background: #454e55;
+}
 
-        justify-content: space-between;
+button:active {
+    transform: translateY(1px);
+}
 
-        align-items: center;
+label {
+    display: block;
 
-        margin: 9px 0;
+    margin-top: 12px;
+    margin-bottom: 5px;
 
-        font-size: 13px;
-    }
+    color: #aab2b8;
 
+    font-size: 11px;
+}
 
-    .axis {
+input[type="range"] {
+    width: 100%;
+}
 
-        font-weight: 700;
+/* ---------------- HELP ---------------- */
 
-        font-size: 14px;
-    }
+#help {
+    position: fixed;
 
+    right: 18px;
+    bottom: 16px;
 
-    .x {
-        color: #e86b6b;
-    }
+    z-index: 20;
 
+    padding: 9px 12px;
 
-    .y {
-        color: #65d18a;
-    }
+    color: #8e979d;
 
+    background: rgba(10,13,16,0.75);
 
-    .z {
-        color: #72a7ee;
-    }
+    border-radius: 8px;
 
+    font-size: 10px;
 
-    #status {
+    line-height: 1.6;
+}
 
-        font-size: 11px;
+/* ---------------- ERROR ---------------- */
 
-        letter-spacing: 2px;
-    }
+#error {
+    display: none;
 
+    position: fixed;
 
-    .status-light {
+    z-index: 100;
 
-        display: inline-block;
+    top: 50%;
+    left: 50%;
 
-        width: 8px;
-        height: 8px;
+    transform: translate(-50%, -50%);
 
-        margin-right: 8px;
+    width: min(720px, 90vw);
 
-        border-radius: 50%;
+    padding: 22px;
 
-        background: #4bd17b;
+    color: white;
 
-        box-shadow:
-            0 0 10px
-            #4bd17b;
-    }
+    background: #291519;
 
+    border: 1px solid #87414c;
 
-    /* ==================================================
-       CONTROLS
-    ================================================== */
+    border-radius: 12px;
+}
 
-    #controls {
+#error pre {
+    white-space: pre-wrap;
 
-        position: fixed;
-
-        top: 20px;
-        right: 20px;
-
-        z-index: 100;
-
-        width: 220px;
-
-        padding: 16px;
-
-        color: #ddd;
-
-        background:
-            rgba(10, 14, 18, 0.90);
-
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.12);
-
-        border-radius: 12px;
-
-        box-shadow:
-            0 15px 40px
-            rgba(0, 0, 0, 0.35);
-
-        backdrop-filter:
-            blur(10px);
-
-        font-size: 12px;
-    }
-
-
-    button {
-
-        width: 100%;
-
-        margin: 4px 0;
-
-        padding: 10px;
-
-        border: 0;
-
-        border-radius: 6px;
-
-        background: #343a40;
-
-        color: white;
-
-        cursor: pointer;
-
-        font-size: 12px;
-    }
-
-
-    button:hover {
-
-        background: #4a525a;
-    }
-
-
-    button:active {
-
-        transform:
-            translateY(1px);
-    }
-
-
-    label {
-
-        display: block;
-
-        margin-top: 12px;
-
-        margin-bottom: 6px;
-    }
-
-
-    input[type="range"] {
-
-        width: 100%;
-    }
-
-
-    /* ==================================================
-       ERROR PANEL
-    ================================================== */
-
-    #errorPanel {
-
-        display: none;
-
-        position: fixed;
-
-        left: 50%;
-
-        top: 50%;
-
-        transform:
-            translate(-50%, -50%);
-
-        z-index: 1000;
-
-        width: min(720px, 90vw);
-
-        padding: 24px;
-
-        color: #fff;
-
-        background:
-            #261519;
-
-        border:
-            1px solid
-            #8d3c49;
-
-        border-radius: 12px;
-
-        box-shadow:
-            0 20px 70px
-            rgba(0, 0, 0, 0.7);
-    }
-
-
-    #errorPanel h2 {
-
-        margin-top: 0;
-
-        color: #ff8d9b;
-    }
-
-
-    #errorText {
-
-        white-space: pre-wrap;
-
-        font-family:
-            Consolas,
-            monospace;
-
-        font-size: 12px;
-
-        line-height: 1.5;
-    }
-
-
-    /* ==================================================
-       HELP
-    ================================================== */
-
-    #help {
-
-        position: fixed;
-
-        right: 20px;
-        bottom: 20px;
-
-        z-index: 100;
-
-        padding: 10px 14px;
-
-        color:
-            rgba(255, 255, 255, 0.55);
-
-        background:
-            rgba(10, 14, 18, 0.78);
-
-        border-radius: 8px;
-
-        font-size: 11px;
-
-        line-height: 1.7;
-    }
-
+    font-size: 12px;
+}
 </style>
-```
 
 </head>
 
 <body>
 
-<!-- =====================================================
-     THREE.JS VIEWPORT
-====================================================== -->
-
 <div id="viewport"></div>
 
-<!-- =====================================================
-     HUD
-====================================================== -->
+<!-- HUD -->
 
 <div id="hud">
 
@@ -421,80 +259,43 @@
 </div>
 
 <div class="subtitle">
-    VIRTUAL CNC
+    VIRTUAL CNC • MILLING MACHINE
 </div>
-
 
 <div class="separator"></div>
 
-
 <div class="coordinate">
-
-    <span class="axis x">
-        X
-    </span>
-
+    <span class="axis-x">X</span>
     <span>
-        <span id="x">
-            0.00
-        </span>
-        mm
+        <b id="x">0.00</b> mm
     </span>
-
 </div>
 
-
 <div class="coordinate">
-
-    <span class="axis y">
-        Y
-    </span>
-
+    <span class="axis-y">Y</span>
     <span>
-        <span id="y">
-            0.00
-        </span>
-        mm
+        <b id="y">0.00</b> mm
     </span>
-
 </div>
 
-
 <div class="coordinate">
-
-    <span class="axis z">
-        Z
-    </span>
-
+    <span class="axis-z">Z</span>
     <span>
-        <span id="z">
-            0.00
-        </span>
-        mm
+        <b id="z">0.00</b> mm
     </span>
-
 </div>
-
 
 <div class="separator"></div>
 
-
-<div id="status">
-
-    <span class="status-light"></span>
-
-    <span id="statusText">
-        READY
-    </span>
-
+<div class="status">
+    <span class="status-dot"></span>
+    <span id="statusText">READY</span>
 </div>
 ```
 
 </div>
 
-<!-- =====================================================
-     CONTROLS
-====================================================== -->
+<!-- CONTROLES -->
 
 <div id="controls">
 
@@ -503,26 +304,21 @@
     ▶ START
 </button>
 
-
 <button id="pause">
     Ⅱ PAUSE
 </button>
-
 
 <button id="stop">
     ■ STOP
 </button>
 
-
 <button id="home">
     ⌂ HOME
 </button>
 
-
 <label>
     Velocidad
 </label>
-
 
 <input
     id="speed"
@@ -536,1639 +332,1686 @@
 
 </div>
 
-<!-- =====================================================
-     HELP
-====================================================== -->
-
 <div id="help">
 
 ```
 Arrastra: rotar<br>
-
 Rueda: zoom<br>
-
 Botón derecho: desplazar
 ```
 
 </div>
 
-<!-- =====================================================
-     ERROR
-====================================================== -->
-
-<div id="errorPanel">
+<div id="error">
 
 ```
-<h2>
-    Error iniciando el simulador 3D
-</h2>
+<h3>
+    Error 3D
+</h3>
 
-<div id="errorText"></div>
+<pre id="errorText"></pre>
 ```
 
 </div>
 
-<!-- =====================================================
-     THREE.JS APPLICATION
-====================================================== -->
+<script type="importmap">
+
+{
+    "imports": {
+
+        "three":
+        "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
+
+    }
+}
+
+</script>
 
 <script type="module">
 
-    /*
-     * =====================================================
-     * IMPORTS
-     * =====================================================
-     */
+import * as THREE
+    from "three";
 
-    import * as THREE
-        from "three";
+import { OrbitControls }
+    from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.js";
 
 
-    import {
-        OrbitControls
-    }
-        from
-        "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.js";
+/* =========================================================
+   ERROR HANDLING
+   ========================================================= */
 
+function showError(error) {
 
-    /*
-     * =====================================================
-     * ERROR HANDLING
-     * =====================================================
-     */
-
-    function showError(error) {
-
-        console.error(error);
-
-
-        const panel =
-            document.getElementById(
-                "errorPanel"
-            );
-
-
-        const text =
-            document.getElementById(
-                "errorText"
-            );
-
-
-        panel.style.display =
-            "block";
-
-
-        text.textContent =
-            String(
-                error &&
-                error.stack
-                    ? error.stack
-                    : error
-            );
-
-    }
-
-
-    window.addEventListener(
-        "error",
-        event => {
-
-            if (event.error) {
-
-                showError(
-                    event.error
-                );
-
-            }
-
-        }
-    );
-
-
-    window.addEventListener(
-        "unhandledrejection",
-        event => {
-
-            showError(
-                event.reason
-            );
-
-        }
-    );
-
-
-    /*
-     * =====================================================
-     * SCENE
-     * =====================================================
-     */
-
-    const scene =
-        new THREE.Scene();
-
-
-    scene.background =
-        new THREE.Color(
-            0x11151a
-        );
-
-
-    /*
-     * =====================================================
-     * CAMERA
-     * =====================================================
-     */
-
-    const camera =
-        new THREE.PerspectiveCamera(
-
-            42,
-
-            window.innerWidth /
-            window.innerHeight,
-
-            0.1,
-
-            1000
-
-        );
-
-
-    camera.position.set(
-
-        145,
-        105,
-        145
-
-    );
-
-
-    /*
-     * =====================================================
-     * RENDERER
-     * =====================================================
-     */
-
-    const renderer =
-        new THREE.WebGLRenderer({
-
-            antialias: true
-
-        });
-
-
-    renderer.setPixelRatio(
-
-        Math.min(
-
-            window.devicePixelRatio,
-
-            2
-
-        )
-
-    );
-
-
-    renderer.setSize(
-
-        window.innerWidth,
-
-        window.innerHeight
-
-    );
-
-
-    renderer.shadowMap.enabled =
-        true;
-
-
-    renderer.shadowMap.type =
-        THREE.PCFSoftShadowMap;
-
-
-    renderer.outputColorSpace =
-        THREE.SRGBColorSpace;
-
+    console.error(error);
 
     document
-        .getElementById(
-            "viewport"
-        )
-        .appendChild(
-            renderer.domElement
-        );
+        .getElementById("error")
+        .style.display = "block";
 
+    document
+        .getElementById("errorText")
+        .textContent =
+        String(error?.stack || error);
 
-    /*
-     * =====================================================
-     * CAMERA CONTROLS
-     * =====================================================
-     */
+}
 
-    const controls =
-        new OrbitControls(
+window.addEventListener(
+    "error",
+    event => {
 
-            camera,
+        if (event.error) {
 
-            renderer.domElement
+            showError(event.error);
 
-        );
-
-
-    controls.target.set(
-
-        0,
-        35,
-        0
-
-    );
-
-
-    controls.enableDamping =
-        true;
-
-
-    controls.dampingFactor =
-        0.06;
-
-
-    /*
-     * =====================================================
-     * LIGHTS
-     * =====================================================
-     */
-
-    const ambient =
-        new THREE.HemisphereLight(
-
-            0xffffff,
-
-            0x222222,
-
-            2.2
-
-        );
-
-
-    scene.add(
-        ambient
-    );
-
-
-    const mainLight =
-        new THREE.DirectionalLight(
-
-            0xffffff,
-
-            3.5
-
-        );
-
-
-    mainLight.position.set(
-
-        100,
-        180,
-        120
-
-    );
-
-
-    mainLight.castShadow =
-        true;
-
-
-    mainLight.shadow.mapSize.width =
-        2048;
-
-
-    mainLight.shadow.mapSize.height =
-        2048;
-
-
-    scene.add(
-        mainLight
-    );
-
-
-    const secondaryLight =
-        new THREE.DirectionalLight(
-
-            0xb8c7ff,
-
-            1.2
-
-        );
-
-
-    secondaryLight.position.set(
-
-        -120,
-        90,
-        -100
-
-    );
-
-
-    scene.add(
-        secondaryLight
-    );
-
-
-    /*
-     * =====================================================
-     * MATERIALS
-     * =====================================================
-     */
-
-    const aluminum =
-        new THREE.MeshStandardMaterial({
-
-            color: 0x7c858c,
-
-            metalness: 0.82,
-
-            roughness: 0.27
-
-        });
-
-
-    const darkAluminum =
-        new THREE.MeshStandardMaterial({
-
-            color: 0x444b51,
-
-            metalness: 0.85,
-
-            roughness: 0.28
-
-        });
-
-
-    const blackMetal =
-        new THREE.MeshStandardMaterial({
-
-            color: 0x141618,
-
-            metalness: 0.88,
-
-            roughness: 0.22
-
-        });
-
-
-    const steel =
-        new THREE.MeshStandardMaterial({
-
-            color: 0xb3b8bd,
-
-            metalness: 0.92,
-
-            roughness: 0.18
-
-        });
-
-
-    const workpieceMaterial =
-        new THREE.MeshStandardMaterial({
-
-            color: 0x9c693a,
-
-            metalness: 0.05,
-
-            roughness: 0.72
-
-        });
-
-
-    /*
-     * =====================================================
-     * HELPERS
-     * =====================================================
-     */
-
-    function box(
-
-        width,
-        height,
-        depth,
-        material
-
-    ) {
-
-        const mesh =
-            new THREE.Mesh(
-
-                new THREE.BoxGeometry(
-
-                    width,
-                    height,
-                    depth
-
-                ),
-
-                material
-
-            );
-
-
-        mesh.castShadow =
-            true;
-
-
-        mesh.receiveShadow =
-            true;
-
-
-        return mesh;
+        }
 
     }
+);
 
+window.addEventListener(
+    "unhandledrejection",
+    event => {
 
-    function cylinder(
-
-        radius,
-        height,
-        material
-
-    ) {
-
-        const mesh =
-            new THREE.Mesh(
-
-                new THREE.CylinderGeometry(
-
-                    radius,
-                    radius,
-                    height,
-                    32
-
-                ),
-
-                material
-
-            );
-
-
-        mesh.castShadow =
-            true;
-
-
-        mesh.receiveShadow =
-            true;
-
-
-        return mesh;
+        showError(event.reason);
 
     }
+);
 
 
-    /*
-     * =====================================================
-     * CNC MACHINE
-     * =====================================================
-     */
+/* =========================================================
+   SCENE
+   ========================================================= */
 
-    const machine =
-        new THREE.Group();
+const scene =
+    new THREE.Scene();
 
+scene.background =
+    new THREE.Color(0x101419);
 
-    scene.add(
-        machine
+scene.fog =
+    new THREE.Fog(
+        0x101419,
+        260,
+        520
     );
 
 
-    /*
-     * BASE
-     */
+/* =========================================================
+   CAMERA
+   ========================================================= */
 
-    const base =
+const camera =
+    new THREE.PerspectiveCamera(
+        40,
+        innerWidth / innerHeight,
+        0.1,
+        1000
+    );
+
+camera.position.set(
+    155,
+    125,
+    175
+);
+
+
+/* =========================================================
+   RENDERER
+   ========================================================= */
+
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias: true
+    });
+
+renderer.setPixelRatio(
+    Math.min(devicePixelRatio, 2)
+);
+
+renderer.setSize(
+    innerWidth,
+    innerHeight
+);
+
+renderer.shadowMap.enabled = true;
+
+renderer.shadowMap.type =
+    THREE.PCFSoftShadowMap;
+
+renderer.outputColorSpace =
+    THREE.SRGBColorSpace;
+
+document
+    .getElementById("viewport")
+    .appendChild(
+        renderer.domElement
+    );
+
+
+/* =========================================================
+   CAMERA CONTROLS
+   ========================================================= */
+
+const controls =
+    new OrbitControls(
+        camera,
+        renderer.domElement
+    );
+
+controls.target.set(
+    0,
+    45,
+    0
+);
+
+controls.enableDamping = true;
+
+controls.dampingFactor = 0.055;
+
+controls.minDistance = 80;
+
+controls.maxDistance = 360;
+
+
+/* =========================================================
+   LIGHTING
+   ========================================================= */
+
+scene.add(
+    new THREE.HemisphereLight(
+        0xdde7ef,
+        0x20252a,
+        2
+    )
+);
+
+
+const keyLight =
+    new THREE.DirectionalLight(
+        0xffffff,
+        3.2
+    );
+
+keyLight.position.set(
+    130,
+    220,
+    150
+);
+
+keyLight.castShadow = true;
+
+keyLight.shadow.mapSize.set(
+    2048,
+    2048
+);
+
+scene.add(keyLight);
+
+
+const fillLight =
+    new THREE.DirectionalLight(
+        0x8faed0,
+        1.2
+    );
+
+fillLight.position.set(
+    -150,
+    100,
+    -120
+);
+
+scene.add(fillLight);
+
+
+const warmLight =
+    new THREE.PointLight(
+        0xffc47a,
+        45,
+        260
+    );
+
+warmLight.position.set(
+    0,
+    80,
+    -120
+);
+
+scene.add(warmLight);
+
+
+/* =========================================================
+   MATERIALS
+   ========================================================= */
+
+function material(
+    color,
+    metalness = 0.5,
+    roughness = 0.3
+) {
+
+    return new THREE.MeshStandardMaterial({
+
+        color,
+
+        metalness,
+
+        roughness
+
+    });
+
+}
+
+
+const frame =
+    material(
+        0x343a3f,
+        0.82,
+        0.25
+    );
+
+
+const darkFrame =
+    material(
+        0x171b1e,
+        0.9,
+        0.2
+    );
+
+
+const steel =
+    material(
+        0x8f979c,
+        0.9,
+        0.2
+    );
+
+
+const polishedSteel =
+    material(
+        0xc2c8cc,
+        0.94,
+        0.16
+    );
+
+
+const black =
+    material(
+        0x0e1012,
+        0.92,
+        0.18
+    );
+
+
+const tableMaterial =
+    material(
+        0x4d555a,
+        0.85,
+        0.3
+    );
+
+
+const workMaterial =
+    material(
+        0x80502c,
+        0.08,
+        0.65
+    );
+
+
+const yellow =
+    material(
+        0xd2a21e,
+        0.55,
+        0.3
+    );
+
+
+const rubber =
+    material(
+        0x111315,
+        0.15,
+        0.72
+    );
+
+
+const emergencyRed =
+    material(
+        0xc52e32,
+        0.45,
+        0.28
+    );
+
+
+/* =========================================================
+   GEOMETRY HELPERS
+   ========================================================= */
+
+function box(
+    width,
+    height,
+    depth,
+    material
+) {
+
+    const mesh =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                width,
+                height,
+                depth
+            ),
+            material
+        );
+
+    mesh.castShadow = true;
+
+    mesh.receiveShadow = true;
+
+    return mesh;
+
+}
+
+
+function cylinder(
+    radius,
+    height,
+    material,
+    segments = 32
+) {
+
+    const mesh =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                radius,
+                radius,
+                height,
+                segments
+            ),
+            material
+        );
+
+    mesh.castShadow = true;
+
+    mesh.receiveShadow = true;
+
+    return mesh;
+
+}
+
+
+function addBox(
+    parent,
+    width,
+    height,
+    depth,
+    material,
+    x,
+    y,
+    z
+) {
+
+    const object =
         box(
-
-            120,
-            8,
-            76,
-
-            blackMetal
-
+            width,
+            height,
+            depth,
+            material
         );
 
-
-    base.position.y =
-        4;
-
-
-    machine.add(
-        base
+    object.position.set(
+        x,
+        y,
+        z
     );
 
+    parent.add(object);
 
-    /*
-     * BASE SIDE PROFILES
-     */
+    return object;
+
+}
+
+
+function addCylinder(
+    parent,
+    radius,
+    height,
+    material,
+    x,
+    y,
+    z
+) {
+
+    const object =
+        cylinder(
+            radius,
+            height,
+            material
+        );
+
+    object.position.set(
+        x,
+        y,
+        z
+    );
+
+    parent.add(object);
+
+    return object;
+
+}
+
+
+/* =========================================================
+   CNC ROOT
+   ========================================================= */
+
+const cnc =
+    new THREE.Group();
+
+scene.add(cnc);
+
+
+/* =========================================================
+   MACHINE BASE
+   ========================================================= */
+
+addBox(
+    cnc,
+    132,
+    8,
+    88,
+    darkFrame,
+    0,
+    4,
+    0
+);
+
+
+addBox(
+    cnc,
+    124,
+    10,
+    80,
+    frame,
+    0,
+    12,
+    0
+);
+
+
+addBox(
+    cnc,
+    118,
+    4,
+    74,
+    black,
+    0,
+    18,
+    0
+);
+
+
+/* =========================================================
+   MACHINE FEET
+   ========================================================= */
+
+for (
+    const x of [-55, 55]
+) {
 
     for (
-        const x of [-52, 52]
+        const z of [-32, 32]
     ) {
 
-        const profile =
-            box(
-
-                8,
-                10,
-                68,
-
-                aluminum
-
-            );
-
-
-        profile.position.set(
-
-            x,
+        addBox(
+            cnc,
+            18,
             10,
-            0
-
-        );
-
-
-        machine.add(
-            profile
-        );
-
-    }
-
-
-    /*
-     * TABLE
-     */
-
-    const table =
-        box(
-
-            104,
-            5,
-            62,
-
-            darkAluminum
-
-        );
-
-
-    table.position.y =
-        17;
-
-
-    machine.add(
-        table
-    );
-
-
-    /*
-     * T-SLOTS
-     */
-
-    for (
-
-        let x = -42;
-
-        x <= 42;
-
-        x += 14
-
-    ) {
-
-        const slot =
-            box(
-
-                2,
-                0.8,
-                55,
-
-                blackMetal
-
-            );
-
-
-        slot.position.set(
-
+            18,
+            rubber,
             x,
-            20,
-            0
-
-        );
-
-
-        machine.add(
-            slot
-        );
-
-    }
-
-
-    /*
-     * WORKPIECE
-     */
-
-    const workpiece =
-        box(
-
-            55,
-            10,
-            38,
-
-            workpieceMaterial
-
-        );
-
-
-    workpiece.position.y =
-        25;
-
-
-    machine.add(
-        workpiece
-    );
-
-
-    /*
-     * COLUMNS
-     */
-
-    for (
-        const x of [-52, 52]
-    ) {
-
-        const column =
-            box(
-
-                10,
-                65,
-                14,
-
-                aluminum
-
-            );
-
-
-        column.position.set(
-
-            x,
-            50,
-            0
-
-        );
-
-
-        machine.add(
-            column
-        );
-
-    }
-
-
-    /*
-     * =====================================================
-     * GANTRY
-     * =====================================================
-     */
-
-    const gantry =
-        new THREE.Group();
-
-
-    machine.add(
-        gantry
-    );
-
-
-    const beam =
-        box(
-
-            105,
-            14,
-            15,
-
-            aluminum
-
-        );
-
-
-    beam.position.y =
-        78;
-
-
-    gantry.add(
-        beam
-    );
-
-
-    /*
-     * GANTRY SIDES
-     */
-
-    for (
-        const x of [-48, 48]
-    ) {
-
-        const side =
-            box(
-
-                12,
-                55,
-                14,
-
-                aluminum
-
-            );
-
-
-        side.position.set(
-
-            x,
-            52,
-            0
-
-        );
-
-
-        gantry.add(
-            side
-        );
-
-    }
-
-
-    /*
-     * =====================================================
-     * X RAILS
-     * =====================================================
-     */
-
-    for (
-        const z of [-8, 8]
-    ) {
-
-        const rail =
-            cylinder(
-
-                2,
-                90,
-
-                steel
-
-            );
-
-
-        rail.rotation.z =
-            Math.PI / 2;
-
-
-        rail.position.set(
-
             0,
-            68,
             z
-
-        );
-
-
-        gantry.add(
-            rail
         );
 
     }
 
-
-    /*
-     * =====================================================
-     * X CARRIAGE
-     * =====================================================
-     */
-
-    const carriage =
-        new THREE.Group();
+}
 
 
-    gantry.add(
-        carriage
-    );
+/* =========================================================
+   T-SLOT TABLE
+   ========================================================= */
+
+addBox(
+    cnc,
+    106,
+    6,
+    62,
+    tableMaterial,
+    0,
+    23,
+    0
+);
 
 
-    const carriageBody =
-        box(
+for (
+    let x = -47;
+    x <= 47;
+    x += 10
+) {
 
-            24,
-            28,
-            25,
-
-            blackMetal
-
-        );
-
-
-    carriageBody.position.y =
-        58;
-
-
-    carriage.add(
-        carriageBody
-    );
-
-
-    /*
-     * =====================================================
-     * Z AXIS
-     * =====================================================
-     */
-
-    const zAxis =
-        new THREE.Group();
-
-
-    carriage.add(
-        zAxis
-    );
-
-
-    /*
-     * Z RAILS
-     */
-
-    const zRailLeft =
-        cylinder(
-
-            2,
-            42,
-
-            steel
-
-        );
-
-
-    zRailLeft.position.set(
-
-        -7,
-        38,
+    addBox(
+        cnc,
+        2,
+        1,
+        57,
+        black,
+        x,
+        26.2,
         0
+    );
 
+}
+
+
+/* =========================================================
+   TABLE CROSS SLOTS
+   ========================================================= */
+
+for (
+    let z = -25;
+    z <= 25;
+    z += 12.5
+) {
+
+    addBox(
+        cnc,
+        104,
+        1,
+        1.2,
+        black,
+        0,
+        26.25,
+        z
+    );
+
+}
+
+
+/* =========================================================
+   WORKPIECE
+   ========================================================= */
+
+addBox(
+    cnc,
+    52,
+    11,
+    32,
+    workMaterial,
+    0,
+    32,
+    0
+);
+
+
+/* =========================================================
+   VISE
+   ========================================================= */
+
+addBox(
+    cnc,
+    64,
+    4,
+    42,
+    darkFrame,
+    0,
+    28.5,
+    0
+);
+
+
+addBox(
+    cnc,
+    5,
+    12,
+    40,
+    steel,
+    -30,
+    37,
+    0
+);
+
+
+addBox(
+    cnc,
+    5,
+    12,
+    40,
+    steel,
+    30,
+    37,
+    0
+);
+
+
+addBox(
+    cnc,
+    3,
+    7,
+    34,
+    polishedSteel,
+    -26.5,
+    39,
+    0
+);
+
+
+addBox(
+    cnc,
+    3,
+    7,
+    34,
+    polishedSteel,
+    26.5,
+    39,
+    0
+);
+
+
+/* =========================================================
+   MACHINE COLUMNS
+   ========================================================= */
+
+for (
+    const x of [-54, 54]
+) {
+
+    addBox(
+        cnc,
+        16,
+        72,
+        18,
+        frame,
+        x,
+        58,
+        0
     );
 
 
-    zAxis.add(
-        zRailLeft
+    addBox(
+        cnc,
+        12,
+        64,
+        22,
+        darkFrame,
+        x,
+        58,
+        8
     );
 
 
-    const zRailRight =
+    addBox(
+        cnc,
+        8,
+        58,
+        2,
+        steel,
+        x,
+        58,
+        -10
+    );
+
+}
+
+
+/* =========================================================
+   REAR SUPPORT
+   ========================================================= */
+
+addBox(
+    cnc,
+    112,
+    12,
+    12,
+    darkFrame,
+    0,
+    91,
+    0
+);
+
+
+/* =========================================================
+   GANTRY
+   ========================================================= */
+
+const gantry =
+    new THREE.Group();
+
+cnc.add(gantry);
+
+
+addBox(
+    gantry,
+    116,
+    18,
+    20,
+    frame,
+    0,
+    91,
+    0
+);
+
+
+addBox(
+    gantry,
+    108,
+    8,
+    24,
+    darkFrame,
+    0,
+    82,
+    0
+);
+
+
+/* =========================================================
+   X LINEAR RAILS
+   ========================================================= */
+
+for (
+    const z of [-9, 9]
+) {
+
+    const rail =
         cylinder(
-
-            2,
-            42,
-
-            steel
-
+            2.4,
+            100,
+            polishedSteel
         );
 
+    rail.rotation.z =
+        Math.PI / 2;
 
-    zRailRight.position.set(
+    rail.position.set(
+        0,
+        86,
+        z
+    );
 
+    gantry.add(rail);
+
+}
+
+
+/* =========================================================
+   X CARRIAGE
+   ========================================================= */
+
+const carriage =
+    new THREE.Group();
+
+gantry.add(carriage);
+
+
+addBox(
+    carriage,
+    28,
+    25,
+    30,
+    darkFrame,
+    0,
+    70,
+    0
+);
+
+
+addBox(
+    carriage,
+    22,
+    18,
+    32,
+    frame,
+    0,
+    57,
+    0
+);
+
+
+/* =========================================================
+   Z AXIS
+   ========================================================= */
+
+const zAxis =
+    new THREE.Group();
+
+carriage.add(zAxis);
+
+
+addBox(
+    zAxis,
+    20,
+    42,
+    22,
+    black,
+    0,
+    39,
+    0
+);
+
+
+/* Z GUIDE RODS */
+
+for (
+    const x of [-6, 6]
+) {
+
+    const rod =
+        cylinder(
+            2,
+            35,
+            polishedSteel
+        );
+
+    rod.position.set(
+        x,
+        37,
+        0
+    );
+
+    zAxis.add(rod);
+
+}
+
+
+/* =========================================================
+   SPINDLE
+   ========================================================= */
+
+const spindle =
+    new THREE.Group();
+
+zAxis.add(spindle);
+
+
+const spindleBody =
+    cylinder(
+        7.5,
+        30,
+        black
+    );
+
+spindleBody.position.y = 34;
+
+spindle.add(spindleBody);
+
+
+const spindleTop =
+    cylinder(
+        8.5,
         7,
-        38,
+        frame
+    );
+
+spindleTop.position.y = 49;
+
+spindle.add(spindleTop);
+
+
+const spindleBottom =
+    cylinder(
+        5,
+        7,
+        steel
+    );
+
+spindleBottom.position.y = 18;
+
+spindle.add(spindleBottom);
+
+
+/* COLLET */
+
+const collet =
+    cylinder(
+        3.7,
+        6,
+        polishedSteel
+    );
+
+collet.position.y = 12;
+
+spindle.add(collet);
+
+
+/* CUTTING TOOL */
+
+const cutter =
+    cylinder(
+        1.3,
+        17,
+        polishedSteel
+    );
+
+cutter.position.y = 0.5;
+
+spindle.add(cutter);
+
+
+/* TOOL TIP */
+
+const toolTip =
+    cylinder(
+        1.6,
+        3,
+        yellow
+    );
+
+toolTip.position.y = -9;
+
+spindle.add(toolTip);
+
+
+/* =========================================================
+   SPINDLE COOLING / FINS
+   ========================================================= */
+
+for (
+    let y = 24;
+    y <= 42;
+    y += 4
+) {
+
+    addBox(
+        spindle,
+        17,
+        1.5,
+        20,
+        frame,
+        0,
+        y,
         0
-
     );
 
-
-    zAxis.add(
-        zRailRight
-    );
+}
 
 
-    /*
-     * =====================================================
-     * SPINDLE
-     * =====================================================
-     */
+/* =========================================================
+   BALL SCREWS
+   ========================================================= */
 
-    const spindle =
+for (
+    const x of [-12, 12]
+) {
+
+    const screw =
         cylinder(
-
-            7,
-            32,
-
-            blackMetal
-
+            1.7,
+            66,
+            polishedSteel
         );
 
-
-    spindle.position.y =
-        37;
-
-
-    zAxis.add(
-        spindle
+    screw.position.set(
+        x,
+        55,
+        11
     );
+
+    cnc.add(screw);
+
+}
+
+
+/* =========================================================
+   CABLE CHAIN
+   ========================================================= */
+
+const cableChain =
+    new THREE.Group();
+
+cnc.add(cableChain);
+
+
+for (
+    let i = 0;
+    i < 11;
+    i++
+) {
+
+    addBox(
+        cableChain,
+        4,
+        3,
+        10,
+        black,
+        -42 + i * 8,
+        86,
+        -15
+    );
+
+}
+
+
+/* =========================================================
+   CONTROL PANEL
+   ========================================================= */
+
+addBox(
+    cnc,
+    20,
+    35,
+    12,
+    darkFrame,
+    76,
+    50,
+    -28
+);
+
+
+addBox(
+    cnc,
+    15,
+    23,
+    1.5,
+    black,
+    76,
+    52,
+    -34.2
+);
+
+
+addBox(
+    cnc,
+    9,
+    5,
+    1.2,
+    yellow,
+    76,
+    60,
+    -35
+);
+
+
+addBox(
+    cnc,
+    4,
+    4,
+    1.2,
+    emergencyRed,
+    71,
+    50,
+    -35
+);
+
+
+addBox(
+    cnc,
+    4,
+    4,
+    1.2,
+    steel,
+    81,
+    50,
+    -35
+);
+
+
+/* =========================================================
+   EMERGENCY STOP
+   ========================================================= */
+
+const emergency =
+    cylinder(
+        3.2,
+        3,
+        emergencyRed
+    );
+
+emergency.rotation.x =
+    Math.PI / 2;
+
+emergency.position.set(
+    76,
+    61,
+    -36
+);
+
+cnc.add(emergency);
+
+
+/* =========================================================
+   BRANDING
+   ========================================================= */
+
+addBox(
+    cnc,
+    34,
+    10,
+    1.5,
+    black,
+    0,
+    72,
+    -12
+);
+
+
+addBox(
+    cnc,
+    18,
+    3,
+    1.7,
+    yellow,
+    0,
+    72,
+    -13
+);
+
+
+/* =========================================================
+   FLOOR
+   ========================================================= */
+
+const floor =
+    new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            500,
+            500
+        ),
+        material(
+            0x171b1f,
+            0.1,
+            0.85
+        )
+    );
+
+floor.rotation.x =
+    -Math.PI / 2;
+
+floor.position.y =
+    -6;
+
+floor.receiveShadow = true;
+
+scene.add(floor);
+
+
+/* =========================================================
+   FLOOR GRID
+   ========================================================= */
+
+const grid =
+    new THREE.GridHelper(
+        300,
+        30,
+        0x394047,
+        0x20252a
+    );
+
+grid.position.y =
+    -5.8;
+
+scene.add(grid);
+
+
+/* =========================================================
+   WORK LIGHT
+   ========================================================= */
+
+const workLight =
+    new THREE.PointLight(
+        0xffe6bd,
+        28,
+        130
+    );
+
+workLight.position.set(
+    0,
+    72,
+    15
+);
+
+scene.add(workLight);
+
+
+/* =========================================================
+   TOOLPATH
+   ========================================================= */
+
+const toolPathPoints = [];
+
+const pathGeometry =
+    new THREE.BufferGeometry();
+
+const pathMaterial =
+    new THREE.LineBasicMaterial({
+        color: 0xff4545,
+        transparent: true,
+        opacity: 0.9
+    });
+
+const toolPath =
+    new THREE.Line(
+        pathGeometry,
+        pathMaterial
+    );
+
+scene.add(toolPath);
+
+
+/* =========================================================
+   SIMULATION STATE
+   ========================================================= */
+
+const state = {
+
+    running: false,
+
+    paused: false,
+
+    stopped: false,
+
+    time: 0,
+
+    speed: 1
+
+};
+
+
+/* =========================================================
+   HUD
+   ========================================================= */
+
+function updateHUD(
+    x,
+    y,
+    z
+) {
+
+    document
+        .getElementById("x")
+        .textContent =
+        x.toFixed(2);
+
+    document
+        .getElementById("y")
+        .textContent =
+        y.toFixed(2);
+
+    document
+        .getElementById("z")
+        .textContent =
+        z.toFixed(2);
+
+}
+
+
+function setStatus(
+    text
+) {
+
+    document
+        .getElementById("statusText")
+        .textContent =
+        text;
+
+}
+
+
+/* =========================================================
+   RECORD TOOLPATH
+   ========================================================= */
+
+const worldToolPosition =
+    new THREE.Vector3();
+
+
+function recordToolPath() {
+
+    toolTip.getWorldPosition(
+        worldToolPosition
+    );
+
+    toolPathPoints.push(
+        worldToolPosition.clone()
+    );
+
+    if (
+        toolPathPoints.length > 1500
+    ) {
+
+        toolPathPoints.shift();
+
+    }
+
+    pathGeometry.setFromPoints(
+        toolPathPoints
+    );
+
+}
+
+
+/* =========================================================
+   SIMULATION
+   ========================================================= */
+
+function simulate(
+    delta
+) {
+
+    if (
+        !state.running ||
+        state.paused ||
+        state.stopped
+    ) {
+
+        return;
+
+    }
+
+
+    state.time +=
+        delta *
+        state.speed;
 
 
     /*
-     * SPINDLE NOSE
-     */
+       X movement
+    */
 
-    const nose =
-        cylinder(
-
-            4,
-            8,
-
-            steel
-
-        );
-
-
-    nose.position.y =
-        17;
-
-
-    zAxis.add(
-        nose
-    );
+    const x =
+        Math.sin(
+            state.time * 0.8
+        ) * 34;
 
 
     /*
-     * TOOL
-     */
+       Y movement
+    */
 
-    const tool =
-        cylinder(
-
-            1.3,
-            16,
-
-            steel
-
-        );
-
-
-    tool.position.y =
-        5;
-
-
-    zAxis.add(
-        tool
-    );
+    const y =
+        Math.sin(
+            state.time * 0.48
+        ) * 18;
 
 
     /*
-     * =====================================================
-     * TOOL PATH
-     * =====================================================
-     */
+       Z movement
+    */
 
-    const pathPoints = [];
-
-
-    const pathGeometry =
-        new THREE.BufferGeometry();
-
-
-    const pathMaterial =
-        new THREE.LineBasicMaterial({
-
-            color: 0xe84b4b,
-
-            transparent: true,
-
-            opacity: 0.95
-
-        });
-
-
-    const pathLine =
-        new THREE.Line(
-
-            pathGeometry,
-
-            pathMaterial
-
-        );
-
-
-    scene.add(
-        pathLine
-    );
+    const z =
+        5 +
+        Math.max(
+            0,
+            Math.sin(
+                state.time * 1.15
+            )
+        ) * 8;
 
 
     /*
-     * =====================================================
-     * FLOOR GRID
-     * =====================================================
-     */
+       Move X carriage
+    */
 
-    const grid =
-        new THREE.GridHelper(
-
-            220,
-            22,
-
-            0x555555,
-
-            0x25282c
-
-        );
-
-
-    grid.position.y =
-        -1;
-
-
-    scene.add(
-        grid
-    );
+    carriage.position.x =
+        x;
 
 
     /*
-     * =====================================================
-     * MACHINE STATE
-     * =====================================================
-     */
+       Move entire gantry along Y
+    */
 
-    const state = {
+    gantry.position.z =
+        y;
 
-        running: false,
 
-        paused: false,
+    /*
+       Move spindle along Z
+    */
 
-        stopped: false,
+    zAxis.position.y =
+        -z;
 
-        time: 0,
 
-        speed: 1
+    /*
+       Rotate spindle
+    */
+
+    spindle.rotation.y +=
+        0.35 *
+        state.speed;
+
+
+    updateHUD(
+        x,
+        y,
+        z
+    );
+
+
+    recordToolPath();
+
+
+    /*
+       End demonstration
+    */
+
+    if (
+        state.time >
+        Math.PI * 10
+    ) {
+
+        state.running = false;
+
+        setStatus(
+            "COMPLETED"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+document
+    .getElementById("start")
+    .onclick = () => {
+
+        state.running = true;
+
+        state.paused = false;
+
+        state.stopped = false;
+
+        setStatus(
+            "RUNNING"
+        );
 
     };
 
 
-    /*
-     * =====================================================
-     * STATUS
-     * =====================================================
-     */
-
-    function setStatus(
-        text
-    ) {
-
-        document
-            .getElementById(
-                "statusText"
-            )
-            .textContent =
-            text;
-
-    }
-
-
-    /*
-     * =====================================================
-     * HUD
-     * =====================================================
-     */
-
-    function updateHUD(
-
-        x,
-        y,
-        z
-
-    ) {
-
-        document
-            .getElementById(
-                "x"
-            )
-            .textContent =
-            x.toFixed(2);
-
-
-        document
-            .getElementById(
-                "y"
-            )
-            .textContent =
-            y.toFixed(2);
-
-
-        document
-            .getElementById(
-                "z"
-            )
-            .textContent =
-            z.toFixed(2);
-
-    }
-
-
-    /*
-     * =====================================================
-     * TOOL POSITION
-     * =====================================================
-     */
-
-    const toolWorldPosition =
-        new THREE.Vector3();
-
-
-    function recordToolPosition() {
-
-        zAxis.updateWorldMatrix(
-
-            true,
-            true
-
-        );
-
-
-        tool.getWorldPosition(
-
-            toolWorldPosition
-
-        );
-
-
-        pathPoints.push(
-
-            toolWorldPosition.clone()
-
-        );
-
+document
+    .getElementById("pause")
+    .onclick = () => {
 
         if (
-            pathPoints.length > 2500
+            state.running
         ) {
 
-            pathPoints.shift();
-
-        }
-
-
-        pathGeometry.setFromPoints(
-
-            pathPoints
-
-        );
-
-    }
-
-
-    /*
-     * =====================================================
-     * MOTION
-     * =====================================================
-     */
-
-    function moveMachine(
-        delta
-    ) {
-
-        if (
-
-            !state.running ||
-            state.paused ||
-            state.stopped
-
-        ) {
-
-            return;
-
-        }
-
-
-        state.time +=
-
-            delta *
-            state.speed;
-
-
-        /*
-         * X MOVEMENT
-         */
-
-        const x =
-
-            Math.sin(
-                state.time
-            ) *
-            32;
-
-
-        /*
-         * Y MOVEMENT
-         */
-
-        const y =
-
-            Math.sin(
-                state.time * 0.6
-            ) *
-            20;
-
-
-        /*
-         * Z MOVEMENT
-         */
-
-        const z =
-
-            2 +
-
-            Math.sin(
-                state.time * 1.3
-            ) *
-            4;
-
-
-        carriage.position.x =
-            x;
-
-
-        gantry.position.z =
-            y;
-
-
-        zAxis.position.y =
-            -z;
-
-
-        updateHUD(
-
-            x,
-            y,
-            z
-
-        );
-
-
-        recordToolPosition();
-
-
-        /*
-         * DEMO COMPLETED
-         */
-
-        if (
-
-            state.time >
-            Math.PI * 8
-
-        ) {
-
-            state.running =
-                false;
-
+            state.paused = true;
 
             setStatus(
-                "COMPLETED"
+                "PAUSED"
             );
 
         }
 
-    }
+    };
 
 
-    /*
-     * =====================================================
-     * START
-     * =====================================================
-     */
+document
+    .getElementById("stop")
+    .onclick = () => {
 
-    document
-        .getElementById(
-            "start"
-        )
-        .addEventListener(
+        state.running = false;
 
-            "click",
+        state.paused = false;
 
-            function () {
+        state.stopped = true;
 
-                state.running =
-                    true;
-
-
-                state.paused =
-                    false;
-
-
-                state.stopped =
-                    false;
-
-
-                setStatus(
-                    "RUNNING"
-                );
-
-            }
-
+        setStatus(
+            "STOPPED"
         );
 
-
-    /*
-     * =====================================================
-     * PAUSE
-     * =====================================================
-     */
-
-    document
-        .getElementById(
-            "pause"
-        )
-        .addEventListener(
-
-            "click",
-
-            function () {
-
-                if (
-                    state.running
-                ) {
-
-                    state.paused =
-                        true;
+    };
 
 
-                    setStatus(
-                        "PAUSED"
-                    );
+document
+    .getElementById("home")
+    .onclick = () => {
 
-                }
+        state.running = false;
 
-            }
+        state.paused = false;
 
+        state.stopped = false;
+
+        state.time = 0;
+
+        carriage.position.x = 0;
+
+        gantry.position.z = 0;
+
+        zAxis.position.y = 0;
+
+        spindle.rotation.y = 0;
+
+        toolPathPoints.length = 0;
+
+        pathGeometry.setFromPoints(
+            []
         );
 
-
-    /*
-     * =====================================================
-     * STOP
-     * =====================================================
-     */
-
-    document
-        .getElementById(
-            "stop"
-        )
-        .addEventListener(
-
-            "click",
-
-            function () {
-
-                state.running =
-                    false;
-
-
-                state.paused =
-                    false;
-
-
-                state.stopped =
-                    true;
-
-
-                setStatus(
-                    "STOPPED"
-                );
-
-            }
-
+        updateHUD(
+            0,
+            0,
+            0
         );
 
-
-    /*
-     * =====================================================
-     * HOME
-     * =====================================================
-     */
-
-    document
-        .getElementById(
-            "home"
-        )
-        .addEventListener(
-
-            "click",
-
-            function () {
-
-                state.running =
-                    false;
-
-
-                state.paused =
-                    false;
-
-
-                state.stopped =
-                    false;
-
-
-                state.time =
-                    0;
-
-
-                carriage.position.x =
-                    0;
-
-
-                gantry.position.z =
-                    0;
-
-
-                zAxis.position.y =
-                    0;
-
-
-                pathPoints.length =
-                    0;
-
-
-                pathGeometry.setFromPoints(
-                    []
-                );
-
-
-                updateHUD(
-
-                    0,
-                    0,
-                    0
-
-                );
-
-
-                setStatus(
-                    "READY"
-                );
-
-            }
-
+        setStatus(
+            "READY"
         );
 
-
-    /*
-     * =====================================================
-     * SPEED
-     * =====================================================
-     */
-
-    document
-        .getElementById(
-            "speed"
-        )
-        .addEventListener(
-
-            "input",
-
-            function () {
-
-                state.speed =
-                    parseFloat(
-                        this.value
-                    );
-
-            }
-
-        );
+    };
 
 
-    /*
-     * =====================================================
-     * ANIMATION
-     * =====================================================
-     */
+document
+    .getElementById("speed")
+    .oninput = event => {
 
-    let previousTime =
-        performance.now();
-
-
-    function animate(
-        currentTime
-    ) {
-
-        requestAnimationFrame(
-            animate
-        );
-
-
-        const delta =
-
-            Math.min(
-
-                (
-                    currentTime -
-                    previousTime
-                ) / 1000,
-
-                0.05
-
+        state.speed =
+            parseFloat(
+                event.target.value
             );
 
-
-        previousTime =
-            currentTime;
+    };
 
 
-        moveMachine(
-            delta
+/* =========================================================
+   ANIMATION
+   ========================================================= */
+
+let previousTime =
+    performance.now();
+
+
+function animate(
+    currentTime
+) {
+
+    requestAnimationFrame(
+        animate
+    );
+
+
+    const delta =
+        Math.min(
+            (currentTime - previousTime) /
+            1000,
+            0.05
         );
 
 
-        controls.update();
+    previousTime =
+        currentTime;
 
 
-        renderer.render(
+    simulate(
+        delta
+    );
 
-            scene,
-            camera
 
+    controls.update();
+
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+
+animate(
+    previousTime
+);
+
+
+/* =========================================================
+   RESIZE
+   ========================================================= */
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        camera.aspect =
+            innerWidth /
+            innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            innerWidth,
+            innerHeight
         );
 
     }
+);
 
 
-    /*
-     * =====================================================
-     * START ANIMATION
-     * =====================================================
-     */
+/* =========================================================
+   INITIAL STATE
+   ========================================================= */
 
-    animate(
-        previousTime
-    );
+updateHUD(
+    0,
+    0,
+    0
+);
 
-
-    /*
-     * =====================================================
-     * WINDOW RESIZE
-     * =====================================================
-     */
-
-    window.addEventListener(
-
-        "resize",
-
-        function () {
-
-            camera.aspect =
-
-                window.innerWidth /
-                window.innerHeight;
+setStatus(
+    "READY"
+);
 
 
-            camera.updateProjectionMatrix();
-
-
-            renderer.setSize(
-
-                window.innerWidth,
-
-                window.innerHeight
-
-            );
-
-        }
-
-    );
-
-
-    /*
-     * =====================================================
-     * INITIAL STATE
-     * =====================================================
-     */
-
-    updateHUD(
-
-        0,
-        0,
-        0
-
-    );
-
-
-    setStatus(
-        "READY"
-    );
-
-
-    console.log(
-        "PyCNC Studio — Three.js initialized"
-    );
+console.log(
+    "PyCNC Studio — Virtual CNC v0.2 initialized"
+);
 
 </script>
 
 </body>
-
 </html>
-
