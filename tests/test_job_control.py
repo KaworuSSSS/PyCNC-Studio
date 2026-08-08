@@ -219,3 +219,60 @@ def test_job_stop_cannot_resume():
     assert job.status == "stopped"
     assert result == "Job is not paused"
 
+
+def test_stopped_job_can_load_new_job():
+    machine = create_machine()
+
+    job = JobManager(machine)
+
+    first_commands = [
+        {
+            "command": "G0",
+            "target": {
+                "X": 50,
+                "Y": 0.0,
+                "Z": 0.0
+            }
+        },
+        {
+            "command": "M0",
+            "action": "pause"
+        }
+    ]
+
+    job.load(first_commands)
+
+    job.start()
+
+    assert job.status == "paused"
+
+    job.stop()
+
+    assert job.status == "stopped"
+
+    second_commands = [
+        {
+            "command": "G0",
+            "target": {
+                "X": 100,
+                "Y": 0.0,
+                "Z": 0.0
+            }
+        }
+    ]
+
+    job.load(second_commands)
+
+    assert job.status == "idle"
+    assert job.current_line == 0
+    assert job.progress == 0.0
+
+    job.start()
+
+    assert job.status == "completed"
+    assert job.current_line == 1
+    assert job.progress == 100.0
+
+
+
+
