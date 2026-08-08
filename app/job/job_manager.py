@@ -1,4 +1,4 @@
-
+```python
 """
 PyCNC Studio
 Job Manager
@@ -27,6 +27,9 @@ class JobManager:
             "Z": 0.0
         }
 
+        # Record executed machine positions
+        self.toolpath = []
+
     def load(self, commands):
 
         self.commands = commands
@@ -41,6 +44,9 @@ class JobManager:
             "Y": 0.0,
             "Z": 0.0
         }
+
+        # Reset toolpath for the new job
+        self.toolpath = []
 
         return f"Job loaded: {len(commands)} commands"
 
@@ -130,6 +136,11 @@ class JobManager:
 
                     self.current_position[axis] = target_value
 
+            # Record the resulting machine position
+            self.toolpath.append(
+                self.current_position.copy()
+            )
+
             return "Movement executed"
 
         # -------------------------------------------------
@@ -153,6 +164,11 @@ class JobManager:
 
             self.current_position[axis] += distance
 
+            # Record the resulting machine position
+            self.toolpath.append(
+                self.current_position.copy()
+            )
+
             return result
 
         # -------------------------------------------------
@@ -168,6 +184,8 @@ class JobManager:
 
         if "parameters" in command:
 
+            moved = False
+
             for axis, value in command["parameters"].items():
 
                 if axis in ["X", "Y", "Z"]:
@@ -178,6 +196,15 @@ class JobManager:
                     )
 
                     self.current_position[axis] += value
+
+                    moved = True
+
+            if moved:
+
+                # Record the resulting machine position
+                self.toolpath.append(
+                    self.current_position.copy()
+                )
 
             return "Movement executed"
 
@@ -298,4 +325,5 @@ class JobManager:
         self.status = "stopped"
 
         return "Job stopped"
+```
 
