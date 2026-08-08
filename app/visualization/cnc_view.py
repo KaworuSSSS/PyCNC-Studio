@@ -7,7 +7,7 @@ class CNCView:
 
         self.simulator = simulator
 
-    def show(self):
+    def create_figure(self):
 
         status = self.simulator.get_status()
 
@@ -17,9 +17,7 @@ class CNCView:
 
         fig = go.Figure()
 
-        # -------------------------------------------------
         # Mesa CNC
-        # -------------------------------------------------
 
         fig.add_trace(
             go.Mesh3d(
@@ -40,13 +38,10 @@ class CNCView:
                 k=[2, 3, 1, 6, 7, 5],
                 opacity=0.35,
                 name="Mesa",
-                hoverinfo="name",
             )
         )
 
-        # -------------------------------------------------
         # Material
-        # -------------------------------------------------
 
         fig.add_trace(
             go.Mesh3d(
@@ -67,30 +62,16 @@ class CNCView:
                 k=[2, 3, 1, 6, 7, 5],
                 opacity=0.5,
                 name="Material",
-                hoverinfo="name",
             )
         )
 
-        # -------------------------------------------------
-        # Trayectoria
-        # -------------------------------------------------
+        # Toolpath
 
         if toolpath:
 
-            x = [
-                point["x"]
-                for point in toolpath
-            ]
-
-            y = [
-                point["y"]
-                for point in toolpath
-            ]
-
-            z = [
-                point["z"]
-                for point in toolpath
-            ]
+            x = [point["x"] for point in toolpath]
+            y = [point["y"] for point in toolpath]
+            z = [point["z"] for point in toolpath]
 
             fig.add_trace(
                 go.Scatter3d(
@@ -99,18 +80,12 @@ class CNCView:
                     z=z,
                     mode="lines+markers",
                     name="Toolpath",
-                    line=dict(
-                        width=6
-                    ),
-                    marker=dict(
-                        size=4
-                    ),
+                    line=dict(width=6),
+                    marker=dict(size=4),
                 )
             )
 
-        # -------------------------------------------------
         # Herramienta
-        # -------------------------------------------------
 
         tool_x = position["x"]
         tool_y = position["y"]
@@ -130,36 +105,21 @@ class CNCView:
             )
         )
 
-        # -------------------------------------------------
-        # Eje de herramienta
-        # -------------------------------------------------
+        # Spindle
 
         fig.add_trace(
             go.Scatter3d(
-                x=[
-                    tool_x,
-                    tool_x
-                ],
-                y=[
-                    tool_y,
-                    tool_y
-                ],
-                z=[
-                    tool_z,
-                    tool_z - 8
-                ],
+                x=[tool_x, tool_x],
+                y=[tool_y, tool_y],
+                z=[tool_z, tool_z - 8],
                 mode="lines",
                 name="Spindle",
-                line=dict(
-                    width=8
-                ),
+                line=dict(width=8),
                 showlegend=False,
             )
         )
 
-        # -------------------------------------------------
-        # Ejes
-        # -------------------------------------------------
+        # Eje X
 
         fig.add_trace(
             go.Scatter3d(
@@ -172,6 +132,8 @@ class CNCView:
             )
         )
 
+        # Eje Y
+
         fig.add_trace(
             go.Scatter3d(
                 x=[0, 0],
@@ -183,6 +145,8 @@ class CNCView:
             )
         )
 
+        # Eje Z
+
         fig.add_trace(
             go.Scatter3d(
                 x=[0, 0],
@@ -193,10 +157,6 @@ class CNCView:
                 line=dict(width=5),
             )
         )
-
-        # -------------------------------------------------
-        # Configuración
-        # -------------------------------------------------
 
         fig.update_layout(
             title="PyCNC Studio — CNC Virtual 3D",
@@ -233,5 +193,11 @@ class CNCView:
                 t=40,
             ),
         )
+
+        return fig
+
+    def show(self):
+
+        fig = self.create_figure()
 
         fig.show()
