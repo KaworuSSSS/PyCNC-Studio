@@ -69,4 +69,14 @@ def test_unknown_parameter_is_rejected():
             "G1 X50 Q999"
         )
 
+def test_invalid_parameter_value_is_rejected():
+
+    parser = GCodeParser()
+
+    with pytest.raises(ValueError, match="Invalid value for parameter 'X'"):
+        parser.parse_line(
+            "G1 Xabc"
+        )
+
+
 
