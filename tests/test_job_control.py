@@ -1,3 +1,4 @@
+```python
 """
 Tests for CNC Job Control.
 """
@@ -141,3 +142,80 @@ def test_job_resume_after_m0():
     assert job.status == "completed"
     assert job.current_line == 3
     assert job.progress == 100.0
+
+
+def test_job_stop_while_paused():
+    machine = create_machine()
+
+    job = JobManager(machine)
+
+    commands = [
+        {
+            "command": "G0",
+            "target": {
+                "X": 50,
+                "Y": 0.0,
+                "Z": 0.0
+            }
+        },
+        {
+            "command": "M0",
+            "action": "pause"
+        },
+        {
+            "command": "G0",
+            "target": {
+                "X": 100,
+                "Y": 0.0,
+                "Z": 0.0
+            }
+        }
+    ]
+
+    job.load(commands)
+
+    job.start()
+
+    assert job.status == "paused"
+
+    job.stop()
+
+    assert job.status == "stopped"
+    assert job.current_line == 2
+
+
+def test_job_stop_cannot_resume():
+    machine = create_machine()
+
+    job = JobManager(machine)
+
+    commands = [
+        {
+            "command": "G0",
+            "target": {
+                "X": 50,
+                "Y": 0.0,
+                "Z": 0.0
+            }
+        },
+        {
+            "command": "G0",
+            "target": {
+                "X": 100,
+                "Y": 0.0,
+                "Z": 0.0
+            }
+        }
+    ]
+
+    job.load(commands)
+
+    job.start()
+
+    job.stop()
+
+    result = job.resume()
+
+    assert job.status == "stopped"
+    assert result == "Job is not paused"
+```
