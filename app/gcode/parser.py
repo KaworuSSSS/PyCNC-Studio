@@ -1,4 +1,3 @@
-
 """
 PyCNC Studio
 G-Code Parser
@@ -57,7 +56,15 @@ class GCodeParser:
                     f"Unsupported parameter '{axis}'"
                 )
 
-            value = float(item[1:])
+            try:
+
+                value = float(item[1:])
+
+            except ValueError:
+
+                raise ValueError(
+                    f"Invalid value for parameter '{axis}'"
+                )
 
             parameters[axis] = value
 
@@ -65,4 +72,3 @@ class GCodeParser:
             "command": command,
             "parameters": parameters
         }
-
