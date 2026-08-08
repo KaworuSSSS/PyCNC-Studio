@@ -2269,6 +2269,10 @@ function recordPath() {
    MACHINE STATE
    ========================================================= */
 
+/* =========================================================
+   CNC MACHINE STATE
+   ========================================================= */
+
 const state = {
 
     running: false,
@@ -2277,37 +2281,26 @@ const state = {
 
     stopped: false,
 
+    completed: false,
+
     time: 0,
 
-    speed: 1
+    speed: 1,
+
+    toolpathIndex: 0
 
 };
 
 
 /* =========================================================
-   AUTOMATIC SIMULATION
+   CNC PROGRAM
    ========================================================= */
 
+const CNC_PROGRAM = {
 
-function simulate(delta) {
+    status: "ready",
 
-    /*
-     * =====================================================
-     * CNC TOOLPATH
-     * =====================================================
-     *
-     * Estos puntos son los que obtuvimos del backend:
-     *
-     * X20 Y10 Z0
-     * X50 Y10 Z-5
-     * X50 Y40 Z-5
-     *
-     * Por ahora son datos de prueba.
-     * Más adelante serán reemplazados por el
-     * toolpath generado por MotionPlanner.
-     */
-
-    const toolpath = [
+    toolpath: [
 
         {
             X: 20,
@@ -2327,241 +2320,230 @@ function simulate(delta) {
             Z: -5
         }
 
-    ];
+    ]
 
+};
+
+
+/* =========================================================
+   SIMULATION CONTROL
+   ========================================================= */
+
+function startProgram() {
 
     /*
-     * =====================================================
-     * ESTADO DEL TOOLPATH
-     * =====================================================
+     * Resume paused program
      */
 
     if (
-        !state.running ||
-        state.paused ||
+        state.paused &&
+        !state.stopped
+    ) {
+
+        state.paused = false;
+
+        state.running = true;
+
+        setStatus("RUNNING");
+
+        document
+            .getElementById("start")
+            .textContent = "▶ START";
+
+        return;
+    }
+
+
+    /*
+     * Restart completed program
+     */
+
+    if (
+        state.completed
+    ) {
+
+        resetProgram();
+
+    }
+
+
+    /*
+     * Restart after STOP
+     */
+
+    if (
         state.stopped
     ) {
 
-        return;
+        resetProgram();
 
     }
 
 
-    /*
-     * Crear estado del reproductor
-     * solamente una vez.
-     */
+    state.running = true;
 
-    if (
-        typeof state.toolpathIndex ===
-        "undefined"
-    ) {
+    state.paused = false;
 
-        state.toolpathIndex = 0;
+    state.stopped = false;
 
-    }
+    state.completed = false;
 
 
-    /*
-     * =====================================================
-     * FIN DEL PROGRAMA
-     * =====================================================
-     */
+    setStatus("RUNNING");
 
-    if (
-        state.toolpathIndex >=
-        toolpath.length
-    ) {
 
-        state.running =
-            false;
-
-        setStatus(
-            "COMPLETED"
-        );
-
-        updateHUD();
-
-        return;
-
-    }
-
-
-    /*
-     * =====================================================
-     * PUNTO OBJETIVO
-     * =====================================================
-     */
-
-    const target =
-        toolpath[
-            state.toolpathIndex
-        ];
-
-
-    /*
-     * =====================================================
-     * VELOCIDAD
-     * =====================================================
-     *
-     * state.speed viene del slider:
-     *
-     * 0.2 ... 3
-     */
-
-    const speed =
-        80 *
-        state.speed;
-
-
-    const distance =
-        speed *
-        delta;
-
-
-    /*
-     * =====================================================
-     * DIFERENCIA X/Y/Z
-     * =====================================================
-     */
-
-    const dx =
-        target.X -
-        machineX;
-
-
-    const dy =
-        target.Y -
-        machineY;
-
-
-    const dz =
-        target.Z -
-        machineZ;
-
-
-    const totalDistance =
-        Math.sqrt(
-            dx * dx +
-            dy * dy +
-            dz * dz
-        );
-
-
-    /*
-     * =====================================================
-     * LLEGAMOS AL PUNTO
-     * =====================================================
-     */
-
-    if (
-        totalDistance <=
-        distance
-    ) {
-
-        machineX =
-            target.X;
-
-        machineY =
-            target.Y;
-
-        machineZ =
-            target.Z;
-
-
-        state.toolpathIndex++;
-
-
-        /*
-         * Evitar que el siguiente frame
-         * deje un pequeño salto.
-         */
-
-        clampMachine();
-
-        updateHUD();
-
-        recordPath();
-
-
-        /*
-         * Si acabamos de ejecutar
-         * el último punto.
-         */
-
-        if (
-            state.toolpathIndex >=
-            toolpath.length
-        ) {
-
-            state.running =
-                false;
-
-            setStatus(
-                "COMPLETED"
-            );
-
-        }
-
-
-        return;
-
-    }
-
-
-    /*
-     * =====================================================
-     * INTERPOLACIÓN
-     * =====================================================
-     */
-
-    const factor =
-        distance /
-        totalDistance;
-
-
-    machineX +=
-        dx *
-        factor;
-
-
-    machineY +=
-        dy *
-        factor;
-
-
-    machineZ +=
-        dz *
-        factor;
-
-
-    /*
-     * =====================================================
-     * APLICAR MOVIMIENTO
-     * =====================================================
-     */
-
-    clampMachine();
-
-    updateHUD();
-
-    recordPath();
-
-
-    /*
-     * =====================================================
-     * SPINDLE
-     * =====================================================
-     */
-
-    toolRotation.rotation.y +=
-        delta *
-        18 *
-        state.speed;
+    document
+        .getElementById("start")
+        .textContent = "▶ START";
 
 }
 
 
+function pauseProgram() {
+
+    if (
+        !state.running
+    ) {
+
+        return;
+
+    }
+
+
+    state.running = false;
+
+    state.paused = true;
+
+    state.stopped = false;
+
+
+    setStatus("PAUSED");
+
+
+    document
+        .getElementById("start")
+        .textContent = "▶ RESUME";
+
+}
+
+
+function stopProgram() {
+
+    state.running = false;
+
+    state.paused = false;
+
+    state.stopped = true;
+
+    state.completed = false;
+
+
+    setStatus("STOPPED");
+
+
+    document
+        .getElementById("start")
+        .textContent = "▶ START";
+
+}
+
+
+function resetProgram() {
+
+    state.running = false;
+
+    state.paused = false;
+
+    state.stopped = false;
+
+    state.completed = false;
+
+    state.toolpathIndex = 0;
+
+    state.time = 0;
+
+
+    /*
+     * Clear toolpath visualization
+     */
+
+    if (
+        typeof pathPoints !== "undefined"
+    ) {
+
+        pathPoints.length = 0;
+
+    }
+
+
+    if (
+        typeof pathGeometry !== "undefined"
+    ) {
+
+        pathGeometry.setFromPoints([]);
+
+    }
+
+
+    /*
+     * Reset machine position
+     */
+
+    machineX = 0;
+
+    machineY = 0;
+
+    machineZ = WORK_AREA.Z;
+
+
+    clampMachine();
+
+
+    updateHUD();
+
+}
+
+
+/* =========================================================
+   HOME
+   ========================================================= */
+
+function goHome() {
+
+    state.running = false;
+
+    state.paused = false;
+
+    state.stopped = false;
+
+    state.completed = false;
+
+    state.toolpathIndex = 0;
+
+    state.time = 0;
+
+
+    machineX = 0;
+
+    machineY = 0;
+
+    machineZ = WORK_AREA.Z;
+
+
+    clampMachine();
+
+
+    updateHUD();
+
+
+    setStatus("READY");
+
+
+    document
+        .getElementById("start")
+        .textContent = "▶ START";
+
+}
 
 
 /* =========================================================
@@ -2571,48 +2553,7 @@ function simulate(delta) {
 document
     .getElementById("start")
     .onclick =
-    () => {
-
-        /*
-         * Si el programa terminó,
-         * START vuelve a comenzar desde
-         * el primer punto.
-         */
-
-        if (
-            state.toolpathIndex >=
-            3
-        ) {
-
-            state.toolpathIndex =
-                0;
-
-            pathPoints.length =
-                0;
-
-            pathGeometry.setFromPoints(
-                []
-            );
-
-        }
-
-
-        state.running =
-            true;
-
-        state.paused =
-            false;
-
-        state.stopped =
-            false;
-
-
-        setStatus(
-            "RUNNING"
-        );
-
-    };
-
+    startProgram;
 
 
 /* =========================================================
@@ -2622,22 +2563,7 @@ document
 document
     .getElementById("pause")
     .onclick =
-    () => {
-
-        if (
-            state.running
-        ) {
-
-            state.paused =
-                true;
-
-            setStatus(
-                "PAUSED"
-            );
-
-        }
-
-    };
+    pauseProgram;
 
 
 /* =========================================================
@@ -2647,84 +2573,44 @@ document
 document
     .getElementById("stop")
     .onclick =
-    () => {
-
-        state.running =
-            false;
-
-        state.paused =
-            false;
-
-        state.stopped =
-            true;
-
-        setStatus(
-            "STOPPED"
-        );
-
-    };
+    stopProgram;
 
 
 /* =========================================================
    HOME
    ========================================================= */
 
-function goHome() {
-
-    state.running =
-        false;
-
-    state.paused =
-        false;
-
-    state.stopped =
-        false;
-
-    state.time =
-        0;
-
-
-    /*
-     * HOME = esquina de trabajo.
-     */
-
-    machineX =
-        0;
-
-    machineY =
-        0;
-
-    machineZ =
-        WORK_AREA.Z;
-
-
-    toolRotation.rotation.y =
-        0;
-
-
-    pathPoints.length =
-        0;
-
-    pathGeometry.setFromPoints(
-        []
-    );
-
-
-    clampMachine();
-
-    updateHUD();
-
-    setStatus(
-        "READY"
-    );
-
-}
-
-
 document
     .getElementById("home")
     .onclick =
     goHome;
+
+
+/* =========================================================
+   SPEED CONTROL
+   ========================================================= */
+
+const speedControl =
+    document.getElementById("speed");
+
+
+if (
+    speedControl
+) {
+
+    speedControl.addEventListener(
+        "input",
+        () => {
+
+            state.speed =
+                parseFloat(
+                    speedControl.value
+                );
+
+        }
+    );
+
+}
 
 
 /* =========================================================
