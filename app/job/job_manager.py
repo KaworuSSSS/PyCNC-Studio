@@ -1,4 +1,3 @@
-
 """
 PyCNC Studio
 Job Manager
@@ -30,6 +29,7 @@ class JobManager:
         # Record executed machine positions
         self.toolpath = []
 
+
     def load(self, commands):
 
         self.commands = commands
@@ -50,15 +50,19 @@ class JobManager:
 
         return f"Job loaded: {len(commands)} commands"
 
+
     def _update_progress(self):
 
         if not self.commands:
+
             self.progress = 0.0
+
             return
 
         self.progress = (
             self.current_line / len(self.commands)
         ) * 100.0
+
 
     def _execute_command(self, command):
 
@@ -72,6 +76,7 @@ class JobManager:
 
             return "Job paused"
 
+
         # -------------------------------------------------
         # M2 - Program end
         # -------------------------------------------------
@@ -82,6 +87,7 @@ class JobManager:
 
             return "Program ended"
 
+
         # -------------------------------------------------
         # M3 - Spindle on
         # -------------------------------------------------
@@ -90,6 +96,7 @@ class JobManager:
 
             return "Spindle started"
 
+
         # -------------------------------------------------
         # M5 - Spindle off
         # -------------------------------------------------
@@ -97,6 +104,7 @@ class JobManager:
         if command.get("command") == "M5":
 
             return "Spindle stopped"
+
 
         # -------------------------------------------------
         # MotionPlanner format
@@ -115,33 +123,39 @@ class JobManager:
 
             target = command["target"]
 
-            for axis in ["X", "Y", "Z"]:
+            x = target.get(
+                "X",
+                self.current_position["X"]
+            )
 
-                target_value = target.get(
-                    axis,
-                    self.current_position[axis]
-                )
+            y = target.get(
+                "Y",
+                self.current_position["Y"]
+            )
 
-                if target_value != self.current_position[axis]:
+            z = target.get(
+                "Z",
+                self.current_position["Z"]
+            )
 
-                    distance = (
-                        target_value
-                        - self.current_position[axis]
-                    )
+            self.machine.move_absolute(
+                x,
+                y,
+                z
+            )
 
-                    self.machine.jog(
-                        axis,
-                        distance
-                    )
+            self.current_position = {
+                "X": x,
+                "Y": y,
+                "Z": z
+            }
 
-                    self.current_position[axis] = target_value
-
-            # Record the resulting machine position
             self.toolpath.append(
                 self.current_position.copy()
             )
 
             return "Movement executed"
+
 
         # -------------------------------------------------
         # Compatibility with v0.4
@@ -164,12 +178,13 @@ class JobManager:
 
             self.current_position[axis] += distance
 
-            # Record the resulting machine position
+            # Record resulting machine position
             self.toolpath.append(
                 self.current_position.copy()
             )
 
             return result
+
 
         # -------------------------------------------------
         # Compatibility with direct G-code parser format
@@ -201,14 +216,16 @@ class JobManager:
 
             if moved:
 
-                # Record the resulting machine position
+                # Record resulting machine position
                 self.toolpath.append(
                     self.current_position.copy()
                 )
 
             return "Movement executed"
 
+
         return None
+
 
     def _execute_next(self):
 
@@ -234,6 +251,7 @@ class JobManager:
 
         return result
 
+
     def _run(self):
 
         """
@@ -251,12 +269,14 @@ class JobManager:
 
                 results.append(result)
 
+
             # M0 pauses immediately after its line.
             if self.status == "paused":
 
                 self.running = False
 
                 return results
+
 
             # M2 ends the program.
             if self.status == "completed":
@@ -266,6 +286,7 @@ class JobManager:
 
                 return results
 
+
             # Stop is a terminal state.
             if self.status == "stopped":
 
@@ -273,7 +294,9 @@ class JobManager:
 
                 return results
 
+
         # Normal end of program
+
         self.running = False
         self.status = "completed"
 
@@ -282,20 +305,24 @@ class JobManager:
 
         return results
 
+
     def start(self):
 
         if not self.commands:
 
             return "No job loaded"
 
+
         # A stopped or completed job cannot be restarted.
         if self.status == "stopped":
 
             return "Job is stopped"
 
+
         if self.status == "completed":
 
             return "Job is already completed"
+
 
         # If the job is paused, use resume()
         # instead of restarting it.
@@ -303,10 +330,12 @@ class JobManager:
 
             return "Job is paused"
 
+
         self.running = True
         self.status = "running"
 
         return self._run()
+
 
     def resume(self):
 
@@ -314,10 +343,12 @@ class JobManager:
 
             return "Job is not paused"
 
+
         self.running = True
         self.status = "running"
 
         return self._run()
+
 
     def stop(self):
 
@@ -325,5 +356,4 @@ class JobManager:
         self.status = "stopped"
 
         return "Job stopped"
-
 
