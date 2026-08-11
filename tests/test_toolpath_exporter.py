@@ -184,4 +184,72 @@ def test_toolpath_exporter_writes_cnc_program_file(tmp_path):
         "status": "ready",
         "toolpath": toolpath
     }
+def test_export_real_gcode_job(tmp_path):
 
+    from app.gcode.file_reader import GCodeFileReader
+    from app.gcode.parser import GCodeParser
+    from app.planner.motion_planner import MotionPlanner
+    from app.job.job_manager import JobManager
+    from app.machine.machine import Machine
+    from app.drivers.simulator_driver import CNCSimulator
+
+    reader = GCodeFileReader()
+
+    lines = reader.load(
+        "examples/test.nc"
+    )
+
+    parser = GCodeParser()
+
+    commands = parser.parse(
+        lines
+    )
+
+    planner = MotionPlanner()
+
+    movements = planner.plan(
+        commands
+    )
+
+    driver = CNCSimulator()
+
+    machine = Machine(
+        driver
+    )
+
+    machine.connect()
+    machine.home()
+
+    job = JobManager(
+        machine
+    )
+
+    job.load(
+        movements
+    )
+
+    job.start()
+
+    exporter = ToolpathExporter()
+
+    output_file = (
+        tmp_path /
+        "cnc_program.json"
+    )
+
+    exporter.write_program_json(
+        job.toolpath,
+        output_file
+    )
+
+    assert output_file.exists()
+
+    data = json.loads(
+        output_file.read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert data["status"] == "ready"
+
+    assert data["toolpath"] == job.toolpath
