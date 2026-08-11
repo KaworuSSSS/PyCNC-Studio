@@ -42,10 +42,6 @@ class CNCSimulator(CNCDriver):
 
         self.history.append("HOME")
 
-        self.toolpath.append(
-            self.position.copy()
-        )
-
         return "Homing completed"
 
 
@@ -75,6 +71,27 @@ class CNCSimulator(CNCDriver):
         }
 
 
+    def move_absolute(self, x, y, z):
+
+        self.position = {
+            "X": float(x),
+            "Y": float(y),
+            "Z": float(z)
+        }
+
+        self.toolpath.append(
+            self.position.copy()
+        )
+
+        self.history.append(
+            f"ABS X{x} Y{y} Z{z}"
+        )
+
+        return {
+            "position": self.position.copy()
+        }
+
+
     def get_toolpath(self):
 
         return [
@@ -87,6 +104,6 @@ class CNCSimulator(CNCDriver):
 
         return {
             "state": self.state,
-            "position": self.position,
-            "history": self.history
+            "position": self.position.copy(),
+            "history": list(self.history)
         }
