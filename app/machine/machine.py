@@ -1,10 +1,8 @@
 class Machine:
 
-
     def __init__(self, driver):
 
         self.driver = driver
-
 
 
     def connect(self):
@@ -12,17 +10,14 @@ class Machine:
         return self.driver.connect()
 
 
-
     def disconnect(self):
 
         return self.driver.disconnect()
 
 
-
     def home(self):
 
         return self.driver.home()
-
 
 
     def jog(self, axis, distance):
@@ -32,6 +27,14 @@ class Machine:
             distance
         )
 
+
+    def move_absolute(self, x, y, z):
+
+        return self.driver.move_absolute(
+            x,
+            y,
+            z
+        )
 
 
     def status(self):
