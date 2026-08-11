@@ -30,3 +30,15 @@ class ToolpathExporter:
         ) as file:
 
             file.write(data)
+
+
+    def to_program_json(self, toolpath):
+
+        program = {
+            "status": "ready",
+            "toolpath": toolpath
+        }
+
+        return json.dumps(
+            program
+        )
