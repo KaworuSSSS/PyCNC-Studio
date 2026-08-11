@@ -73,3 +73,41 @@ def test_toolpath_exporter_creates_json():
             "Z": -5
         }
     ]
+def test_toolpath_exporter_writes_json_file(tmp_path):
+
+    exporter = ToolpathExporter()
+
+    toolpath = [
+        {
+            "X": 20,
+            "Y": 10,
+            "Z": 0
+        },
+        {
+            "X": 50,
+            "Y": 10,
+            "Z": -5
+        },
+        {
+            "X": 50,
+            "Y": 40,
+            "Z": -5
+        }
+    ]
+
+    output_file = tmp_path / "toolpath.json"
+
+    exporter.write_json(
+        toolpath,
+        output_file
+    )
+
+    assert output_file.exists()
+
+    data = json.loads(
+        output_file.read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert data == toolpath
