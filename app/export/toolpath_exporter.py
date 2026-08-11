@@ -42,3 +42,18 @@ class ToolpathExporter:
         return json.dumps(
             program
         )
+
+
+    def write_program_json(self, toolpath, filename):
+
+        data = self.to_program_json(
+            toolpath
+        )
+
+        with open(
+            filename,
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            file.write(data)
