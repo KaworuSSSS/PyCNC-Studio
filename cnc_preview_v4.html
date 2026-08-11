@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PyCNC Studio</title>
+
+<link rel="stylesheet" href="css/cnc_preview.css">
+
+</head>
+
+
+<body>
+
+
+<div id="viewport"></div>
+
+
+<!-- =========================================================
+     HUD
+     ========================================================= -->
+
+<div id="hud">
+
+    <div class="title">
+        PyCNC Studio
+    </div>
+
+    <div class="subtitle">
+        VIRTUAL CNC • MILLING MACHINE
+    </div>
+
+    <div class="separator"></div>
+
+    <div class="coordinate">
+
+        <span class="axis-x">
+            X
+        </span>
+
+        <span>
+            <b id="x">0.00</b> mm
+        </span>
+
+    </div>
+
+    <div class="coordinate">
+
+        <span class="axis-y">
+            Y
+        </span>
+
+        <span>
+            <b id="y">0.00</b> mm
+        </span>
+
+    </div>
+
+    <div class="coordinate">
+
+        <span class="axis-z">
+            Z
+        </span>
+
+        <span>
+            <b id="z">0.00</b> mm
+        </span>
+
+    </div>
+
+    <div class="separator"></div>
+
+    <div class="status">
+
+        <span class="status-dot"></span>
+
+        <span id="statusText">
+            READY
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     MACHINE CONTROL
+     ========================================================= -->
+
+<div id="controls">
+
+    <div class="control-title">
+        MACHINE CONTROL
+    </div>
+
+    <button id="start">
+        ▶ START
+    </button>
+
+    <button id="pause">
+        Ⅱ PAUSE
+    </button>
+
+    <button id="stop">
+        ■ STOP
+    </button>
+
+    <button id="home">
+        ⌂ HOME
+    </button>
+
+    <label>
+        VELOCIDAD
+    </label>
+
+    <input
+        id="speed"
+        type="range"
+        min="0.2"
+        max="3"
+        step="0.1"
+        value="1"
+    >
+
+</div>
+
+
+<!-- =========================================================
+     MANUAL JOG
+     ========================================================= -->
+
+<div id="jog">
+
+    <div class="control-title">
+        MANUAL JOG
+    </div>
+
+    <div class="jog-step">
+
+        <span>
+            STEP
+        </span>
+
+        <button
+            class="step active"
+            data-step="0.1"
+        >
+            0.1
+        </button>
+
+        <button
+            class="step"
+            data-step="1"
+        >
+            1
+        </button>
+
+        <button
+            class="step"
+            data-step="10"
+        >
+            10
+        </button>
+
+        <span>
+            mm
+        </span>
+
+    </div>
+
+
+    <div class="jog-grid">
+
+        <div></div>
+
+        <button
+            class="jog-btn y"
+            data-axis="y"
+            data-dir="1"
+        >
+            Y+
+        </button>
+
+        <div></div>
+
+
+        <button
+            class="jog-btn x"
+            data-axis="x"
+            data-dir="-1"
+        >
+            X−
+        </button>
+
+        <button
+            class="home-mini"
+            id="jogHome"
+        >
+            HOME
+        </button>
+
+        <button
+            class="jog-btn x"
+            data-axis="x"
+            data-dir="1"
+        >
+            X+
+        </button>
+
+
+        <div></div>
+
+        <button
+            class="jog-btn y"
+            data-axis="y"
+            data-dir="-1"
+        >
+            Y−
+        </button>
+
+        <div></div>
+
+    </div>
+
+
+    <div class="z-controls">
+
+        <button
+            class="jog-btn z"
+            data-axis="z"
+            data-dir="1"
+        >
+            Z+
+        </button>
+
+        <button
+            class="jog-btn z"
+            data-axis="z"
+            data-dir="-1"
+        >
+            Z−
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     HELP
+     ========================================================= -->
+
+<div id="help">
+
+    Arrastra: rotar<br>
+    Rueda: zoom<br>
+    Botón derecho: desplazar<br>
+    Teclado: A/D X • W/S Y • R/F Z
+
+</div>
+
+
+<!-- =========================================================
+     ERROR
+     ========================================================= -->
+
+<div id="error">
+
+    <h3>
+        Error 3D
+    </h3>
+
+    <pre id="errorText"></pre>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="module" src="js/modules/main.js"></script>
+</body>
+
+</html>
