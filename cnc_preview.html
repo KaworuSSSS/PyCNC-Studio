@@ -2335,6 +2335,13 @@ async function loadCNCProgram() {
             Array.isArray(program.toolpath)
                 ? program.toolpath
                 : [];
+		state.toolpathIndex = 0;
+		state.time = 0;
+		state.lastTime = undefined;
+		state.running = false;
+		state.paused = false;
+		state.stopped = false;
+		state.completed = false;
 
         console.log(
             "PyCNC Studio — CNC program loaded:",
