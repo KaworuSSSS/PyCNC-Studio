@@ -2301,30 +2301,58 @@ const CNC_PROGRAM = {
 
     status: "ready",
 
-    toolpath: [
-
-        {
-            X: 20,
-            Y: 10,
-            Z: 0
-        },
-
-        {
-            X: 50,
-            Y: 10,
-            Z: -5
-        },
-
-        {
-            X: 50,
-            Y: 40,
-            Z: -5
-        }
-
-    ]
+    toolpath: []
 
 };
 
+/* =========================================================
+   LOAD CNC PROGRAM
+   ========================================================= */
+
+async function loadCNCProgram() {
+
+    try {
+
+        const response = await fetch(
+            "cnc_program.json"
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+
+        }
+
+        const program =
+            await response.json();
+
+        CNC_PROGRAM.status =
+            program.status || "ready";
+
+        CNC_PROGRAM.toolpath =
+            Array.isArray(program.toolpath)
+                ? program.toolpath
+                : [];
+
+        console.log(
+            "PyCNC Studio — CNC program loaded:",
+            CNC_PROGRAM
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "PyCNC Studio — Failed to load CNC program:",
+            error
+        );
+
+    }
+
+}
 
 /* =========================================================
    SIMULATION CONTROL
