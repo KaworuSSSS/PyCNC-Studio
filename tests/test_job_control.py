@@ -367,4 +367,46 @@ def test_job_execution_state():
 
     assert job.progress == 100.0
 
+def test_job_and_machine_toolpath_match():
 
+    machine = create_machine()
+
+    job = JobManager(machine)
+
+    commands = [
+        {
+            "command": "G0",
+            "target": {
+                "X": 50,
+                "Y": 0.0,
+                "Z": 0.0
+            }
+        },
+        {
+            "command": "G1",
+            "target": {
+                "X": 50,
+                "Y": 25,
+                "Z": -5.0
+            }
+        }
+    ]
+
+    job.load(commands)
+
+    job.start()
+
+    machine_toolpath = machine.driver.get_toolpath()
+
+    assert machine_toolpath == [
+        {
+            "X": 50.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        {
+            "X": 50.0,
+            "Y": 25.0,
+            "Z": -5.0
+        }
+    ]
