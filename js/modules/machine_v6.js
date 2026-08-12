@@ -460,6 +460,10 @@ export function buildMachine({
 
         cnc,
 
+        carriage,
+
+        gantry,
+
     carriage,
 
     gantry,
