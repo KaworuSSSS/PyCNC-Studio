@@ -5,6 +5,8 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 export function buildMachine({
     scene,
     cnc,
+    carriage,
+    gantry,
     zAxis,
     MACHINE,
     LIMITS,

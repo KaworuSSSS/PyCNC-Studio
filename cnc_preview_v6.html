@@ -228,6 +228,34 @@ scene.add(
 
 /*
 ============================================================
+X AXIS — CARRIAGE
+============================================================
+*/
+
+const carriage =
+    new THREE.Group();
+
+cnc.add(
+    carriage
+);
+
+
+/*
+============================================================
+Y AXIS — GANTRY
+============================================================
+*/
+
+const gantry =
+    new THREE.Group();
+
+carriage.add(
+    gantry
+);
+
+
+/*
+============================================================
 Z AXIS
 ============================================================
 */
@@ -235,7 +263,7 @@ Z AXIS
 const zAxis =
     new THREE.Group();
 
-cnc.add(
+gantry.add(
     zAxis
 );
 
@@ -263,7 +291,7 @@ const LIMITS = {
     Y_MIN: 0,
     Y_MAX: WORK_AREA.Y,
 
-    Z_MIN: -100,
+    Z_MIN: 0,
     Z_MAX: WORK_AREA.Z
 
 };
@@ -320,6 +348,10 @@ try {
             scene,
 
             cnc,
+
+            carriage,
+
+            gantry,
 
             zAxis,
 
