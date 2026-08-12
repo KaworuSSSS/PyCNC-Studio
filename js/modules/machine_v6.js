@@ -323,12 +323,32 @@ export function buildMachine({
 
         /*
          * X
+         *
+         * machineX representa la coordenada
+         * X de la máquina.
          */
-
         if (typeof machineX !== "number") {
             machineX =
                 WORK_AREA.X / 2;
         }
+
+        carriage.position.x =
+            machineX;
+
+
+        /*
+         * Y
+         *
+         * machineY representa la coordenada
+         * Y de la máquina.
+         */
+        if (typeof machineY !== "number") {
+            machineY =
+                WORK_AREA.Y / 2;
+        }
+
+        gantry.position.z =
+            machineY;
 
 
         /*
@@ -376,16 +396,6 @@ export function buildMachine({
 
             zAxis.position.y +=
                 correction;
-
-
-            machineZ =
-                THREE.MathUtils.clamp(
-                    WORK_AREA.Z -
-                    zAxis.position.y,
-
-                    LIMITS.Z_MIN,
-                    LIMITS.Z_MAX
-                );
 
         }
 
@@ -478,6 +488,7 @@ export function buildMachine({
                 value;
 
             clampMachine();
+            applyMachinePosition();
 
         },
 
@@ -487,6 +498,7 @@ export function buildMachine({
                 value;
 
             clampMachine();
+            applyMachinePosition();
 
         },
 
@@ -496,6 +508,7 @@ export function buildMachine({
                 value;
 
             clampMachine();
+            applyMachinePosition();
 
         },
 
