@@ -2004,6 +2004,8 @@ toolRotation.add(
 const toolWorld =
     new THREE.Vector3();
 
+const Z_AXIS_AT_TABLE = TABLE_TOP - toolTip.position.y;
+
 
 /* =========================================================
    POSITIONING
@@ -2053,19 +2055,16 @@ function applyMachinePosition() {
 
     /*
      * Z
+     *
+     * machineZ:
+     *   0  = herramienta sobre la mesa
+     *   70 = herramienta completamente arriba
+     *
+     * toolTip.position.y = -355
      */
-
-    /*
-     * El eje Z se mueve en
-     * coordenadas 3D inversas.
-     */
-
-    const zTravel =
-        WORK_AREA.Z -
-        machineZ;
 
     zAxis.position.y =
-        zTravel;
+        Z_AXIS_AT_TABLE + machineZ;
 
 
     /*
@@ -2123,8 +2122,8 @@ function enforceToolLimit() {
         machineZ =
             THREE.MathUtils.clamp(
 
-                WORK_AREA.Z -
-                zAxis.position.y,
+                zAxis.position.y -
+                Z_AXIS_AT_TABLE,
 
                 LIMITS.Z_MIN,
                 LIMITS.Z_MAX
