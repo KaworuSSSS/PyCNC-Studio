@@ -470,6 +470,10 @@ export function buildMachine({
 
         TABLE_TOP,
 
+        LIMITS,
+
+        WORK_AREA,
+
         get machineX() {
             return machineX;
         },
